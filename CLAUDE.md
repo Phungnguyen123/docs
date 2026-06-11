@@ -70,10 +70,25 @@ video-use transcribes with **ElevenLabs Scribe**, which needs an API key:
 export ELEVENLABS_API_KEY=sk_...        # or add it to your environment config
 ```
 
-No key? You can transcribe locally instead with the `hyperframes-media` skill
-(`npx hyperframes transcribe`, Whisper-based) and feed that transcript in — but ElevenLabs
-gives word-level timestamps and speaker IDs that video-use's cutting relies on, so it's the
-recommended path.
+No key? Use the bundled **local Whisper fallback** — it writes a transcript in the exact
+shape the cutting pipeline expects (no ElevenLabs account needed):
+
+```bash
+uv pip install --system faster-whisper                                   # one-time
+python .claude/skills/video-use/helpers/transcribe_local.py <clip.mp4>   # -> edit/transcripts/<clip>.json
+python .claude/skills/video-use/helpers/pack_transcripts.py --edit-dir <clip_parent>/edit
+```
+
+The local path has **no speaker diarization** (single speaker assumed) and no audio-event
+tags, but cutting and filler removal work the same since they key off word boundaries and
+silence. ElevenLabs Scribe stays the recommended path for multi-speaker interviews because
+of its word-level speaker IDs.
+
+## Dropping footage
+
+Put raw clips in `videos/` (or any folder) and ask in plain language. Sources are never
+modified — all work lands in an `edit/` subfolder. Media files aren't committed to git
+(see `videos/.gitignore`).
 
 ## Vendored skills
 

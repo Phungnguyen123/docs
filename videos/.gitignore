@@ -1,0 +1,5 @@
+# Raw footage and render artifacts are large — keep them out of git.
+# Track only this folder's README and the ignore rules themselves.
+*
+!.gitignore
+!README.md
