@@ -47,4 +47,20 @@ else
   log "WARNING: node not found — HyperFrames (npx hyperframes) will not run"
 fi
 
+# --- 4. Register the Stitch MCP server (only if a key is provided) ---
+# The secret never lives in this file or in git — it comes from the
+# STITCH_API_KEY environment variable. Skipped silently if unset.
+if [ -n "${STITCH_API_KEY:-}" ]; then
+  if claude mcp get stitch >/dev/null 2>&1; then
+    log "stitch MCP server already registered."
+  else
+    log "registering stitch MCP server..."
+    claude mcp add --transport http stitch https://stitch.googleapis.com/mcp \
+      --header "X-Goog-Api-Key: ${STITCH_API_KEY}" >/dev/null
+    log "stitch MCP server registered."
+  fi
+else
+  log "STITCH_API_KEY not set — skipping stitch MCP registration."
+fi
+
 log "studio ready: drop footage in a folder and ask Claude to edit it."
