@@ -149,17 +149,25 @@ Mỗi mục là một "asset type" tái dùng được, chỉ cần đổi nội
 
 ---
 
-## 12. Tổ chức file (pipeline brand đã xây)
+## 12. Tổ chức file
 
+**Pipeline code (commit được, tái dùng):**
 ```
-videos/edit/brand/
-├── kit.py / kit1080.py        # design-system + helper (1080 auto-scale ×S)
-├── build_*.py                 # generator: title/outro, lower-third, counter, mockup, typo, panel, closetag
+studio/
+├── kit.py / kit1080.py        # design-system + helper (1080 auto-scale ×S, font path portable)
+├── generators/build_*.py      # thư viện kỹ thuật: title/outro, lower-third, counter, mockup, typo, panel…
+└── README.md                  # canonical generators + cách tái dùng
+.fonts/poppins/                # Poppins (OFL) — committed
+```
+
+**Workspace mỗi project (media — gitignore):**
+```
+videos/<project>/edit/brand/
 ├── leak*.png                  # light-leak cho grade
 ├── footage_graded*.mp4        # footage sau grade (nền cho mọi overlay)
 ├── <asset>/%04d.png           # chuỗi khung RGBA của từng overlay
 ├── title.mp4 / outro.mp4 / footage_fx.mp4
-videos/edit/
+videos/<project>/edit/
 └── final.mp4 / *_1080p10_native.mp4   # bản giao
 ```
 
