@@ -64,6 +64,9 @@ Mỗi mục là một "asset type" tái dùng được, chỉ cần đổi nội
 - **Màu**: accent `#007eff`, amber `#ffab00`, text `#333333`, dark `#002a66`, muted `#898989`,
   nền `#f4f9ff` / `#e4f2ff` / `#eaf1ff`.
 - **Font**: Poppins (400/500/600/700), bundled trong `.fonts/poppins`.
+  ⚠️ **Tiếng Việt**: Poppins bundled **thiếu glyph dấu chồng** (ế, ề, ầ, ố, ợ… ra ô vuông). Cho text
+  tiếng Việt dùng **Be Vietnam Pro** (`.fonts/bevietnampro`, weights Medium/SemiBold/Bold/Black —
+  phủ đủ tiếng Việt). Generator portrait `studio/generators/build_overlays_portrait.py` đã dùng sẵn.
 - **Token hình**: bo góc 12–16px, shadow mềm (blur + offset + opacity ~0.3), pill bo tròn,
   gradient xanh→amber cho điểm nhấn.
 - **Helper**: `F()` (font), `pill()`, `add_shadow()`, `over()` (alpha-composite), `tw/vbox` (đo chữ).
