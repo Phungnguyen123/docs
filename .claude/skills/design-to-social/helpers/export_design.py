@@ -45,6 +45,11 @@ def main() -> int:
     ap.add_argument("--selector", help="CSS selector for slides (auto-detected if omitted)")
     ap.add_argument("--pdf-name", default="carousel.pdf", help="PDF filename (default carousel.pdf)")
     ap.add_argument("--dpi", type=int, default=96, help="PDF resolution hint (default 96)")
+    ap.add_argument("--targets", help="also emit resized variants: comma list of presets / "
+                    "WxH / W:H (e.g. ig-square,ig-story,1:1,9:16). Written to <outdir>/variants/")
+    ap.add_argument("--fit", choices=["contain", "cover"], default="contain",
+                    help="how variants re-frame the design (default contain = never crop)")
+    ap.add_argument("--fill", default="blur", help="variant backdrop: blur | auto | #RRGGBB")
     ap.add_argument("--no-selfcontain", action="store_true",
                     help="skip the unwrap/font-embed step (input is already standalone)")
     args = ap.parse_args()
@@ -85,6 +90,16 @@ def main() -> int:
         pdf_path = os.path.join(args.outdir, args.pdf_name)
         run([sys.executable, os.path.join(HERE, "topdf.py"),
              "--from-sizes", args.outdir, "-o", pdf_path, "--dpi", str(args.dpi)])
+
+    # 4) resized variants (other social sizes/ratios) — done from the native PNGs
+    if args.targets:
+        print("[4] resize variants:", args.targets)
+        variants = [sys.executable, os.path.join(HERE, "resize_variants.py"),
+                    "--from-dir", args.outdir, "--targets", args.targets,
+                    "--fit", args.fit, "--fill", args.fill]
+        if "pdf" in formats:
+            variants += ["--pdf", "--pdf-name", args.pdf_name]
+        run(variants)
 
     if "png" not in formats:
         for f in os.listdir(args.outdir):

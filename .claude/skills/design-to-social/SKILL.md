@@ -92,6 +92,47 @@ native px (smaller) or `--scale 2`/`3` for crisp hi-res, `--pdf-name name.pdf`,
 `--selector ".slide"` if auto-detection misses, `--no-selfcontain` if the input is
 already a clean standalone page.
 
+#### Auto-resize to multiple sizes/ratios (same run)
+
+Add `--targets` to also emit the design in other social formats. Fixed-canvas designs
+can't reflow, so each variant keeps the design at its own aspect, centers it, and fills
+the letterbox — **nothing is cropped**.
+
+```bash
+python .claude/skills/design-to-social/helpers/export_design.py \
+    work/design.html --outdir work/export --formats png,pdf --scale 2 \
+    --targets ig-square,ig-story,li-landscape
+```
+
+Produces, alongside the native output:
+
+```
+work/export/
+├── slide-01.png …            native size (e.g. 4:5)
+├── carousel.pdf
+└── variants/
+    ├── ig-square/  slide-01.png …  carousel.pdf   (1080×1080)
+    ├── ig-story/   slide-01.png …  carousel.pdf   (1080×1920)
+    └── li-landscape/ slide-01.png … carousel.pdf  (1200×628)
+```
+
+Targets accept **preset names**, explicit **`WxH`**, or **`W:H` ratios**:
+`ig-square 1:1 · ig-portrait 4:5 · ig-story/reel/tiktok 9:16 · li-landscape/fb-feed
+1.91:1 · li-square · x-feed 16:9 · pin 2:3`.
+
+Re-frame controls:
+- `--fit contain` (default) never crops — the whole design fits, letterbox is filled.
+  `--fit cover` fills the frame edge-to-edge and center-crops overflow (may clip).
+- `--fill blur` (default) backs the letterbox with a blurred, dimmed copy of the design
+  (looks intentional, great for 4:5 → 9:16 stories). `--fill auto` samples a solid
+  colour from the design's border; `--fill #RRGGBB` uses a colour you pick.
+
+For a pixel-perfect retarget instead of re-framing, change the stage dimensions in the
+design (or the `.standalone.html`) so the layout is authored for that size, then re-run.
+
+You can also run the resizer standalone on already-rendered PNGs:
+`python helpers/resize_variants.py --from-dir work/export --targets 1:1,9:16 --pdf`.
+
 ### Step 3 — Deliver
 
 - Send the files with **SendUserFile** (the PDF for a carousel post; PNGs for single
@@ -151,3 +192,4 @@ platform, resize the stage in the design (or in the `.standalone.html`) and re-r
 | `helpers/selfcontain.py` | Unwrap `.dc` runtime + embed webfonts. Also usable standalone. |
 | `helpers/render.cjs` | Screenshot each slide at native px × scale (Playwright). |
 | `helpers/topdf.py` | Assemble slide PNGs into a multi-page PDF (Pillow). |
+| `helpers/resize_variants.py` | Re-frame rendered slides into other sizes/ratios (Pillow). |
