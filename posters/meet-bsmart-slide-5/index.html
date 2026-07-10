@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meet BSmart — Slide 5 (Coming Soon)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; }
+  body {
+    background: #0b1f5c;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  @keyframes bsFly5 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes bsMark5 { 0%,100% { opacity:.75; } 50% { opacity:1; } }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    *, *::before, *::after {
+      animation-delay: -99s !important; animation-duration: .001s !important;
+      animation-iteration-count: 1 !important; animation-fill-mode: both !important;
+      animation-play-state: running !important; transition-duration: 0s !important;
+    }
+    html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+    #printslide5 { zoom: 0.66; margin: 0 auto !important; }
+  }
+</style>
+</head>
+<body>
+<div id="printslide5" style="position:relative;width:1080px;height:1350px;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:radial-gradient(125% 96% at 42% 3%, #EAF3FF 0%, #D2E5FF 22%, #B6D4FB 46%, #8FBCF2 74%, #79ACEF 100%);">
+
+  <!-- warmest wash + big gold bloom on the right horizon -->
+  <div style="position:absolute;inset:0;background:radial-gradient(64% 60% at 102% 60%, rgba(255,182,70,0.62), rgba(255,182,70,0) 58%);pointer-events:none;"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(90% 70% at 88% 84%, rgba(255,196,92,0.44), rgba(255,196,92,0) 60%);pointer-events:none;"></div>
+
+  <!-- soft white glow top-center -->
+  <div style="position:absolute;top:-300px;left:44%;transform:translateX(-50%);width:900px;height:640px;background:radial-gradient(closest-side, rgba(255,255,255,0.80), rgba(255,255,255,0) 70%);filter:blur(6px);pointer-events:none;"></div>
+
+  <!-- faint tech grid, right half -->
+  <div style="position:absolute;top:0;right:0;width:640px;height:1350px;background-image:linear-gradient(rgba(11,31,92,0.08) 1px, transparent 1px),linear-gradient(90deg, rgba(11,31,92,0.08) 1px, transparent 1px);background-size:58px 58px;-webkit-mask-image:radial-gradient(120% 92% at 100% 34%, rgba(0,0,0,0.85), rgba(0,0,0,0) 72%);mask-image:radial-gradient(120% 92% at 100% 34%, rgba(0,0,0,0.85), rgba(0,0,0,0) 72%);pointer-events:none;"></div>
+
+  <!-- glossy floor plane -->
+  <div style="position:absolute;left:0;top:837px;width:1080px;height:513px;background:linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(120,175,235,0.05) 12%, rgba(52,110,205,0.13) 60%, rgba(30,74,150,0.22) 100%);pointer-events:none;"></div>
+
+  <!-- SVG effects: timeline, comet trail, horizon, waveform hint, marker, particles -->
+  <svg width="1080" height="1350" viewBox="0 0 1080 1350" style="position:absolute;top:0;left:0;pointer-events:none;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="tlGrad5" x1="0" y1="0" x2="1080" y2="0" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#F5A623"></stop>
+        <stop offset="0.5" stop-color="#FFC24C"></stop>
+        <stop offset="0.86" stop-color="#FFD166"></stop>
+        <stop offset="1" stop-color="#FFE9A8"></stop>
+      </linearGradient>
+      <linearGradient id="trail5" x1="640" y1="820" x2="980" y2="700" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#7FE9FF" stop-opacity="0"></stop>
+        <stop offset="0.45" stop-color="#EAFBFF" stop-opacity="0.7"></stop>
+        <stop offset="1" stop-color="#FFFFFF" stop-opacity="1"></stop>
+      </linearGradient>
+      <filter id="softBlur5" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9"></feGaussianBlur></filter>
+      <filter id="coreBlur5" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2"></feGaussianBlur></filter>
+      <filter id="partGlow5" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="2.6"></feGaussianBlur></filter>
+      <radialGradient id="horizon5" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#FFF4CE" stop-opacity="0.95"></stop>
+        <stop offset="0.4" stop-color="#FFC24C" stop-opacity="0.6"></stop>
+        <stop offset="1" stop-color="#F5A623" stop-opacity="0"></stop>
+      </radialGradient>
+    </defs>
+
+    <!-- glowing gold horizon at right edge of timeline -->
+    <circle cx="1040" cy="837" r="230" fill="url(#horizon5)"></circle>
+
+    <!-- glossy floor sheen -->
+    <ellipse cx="540" cy="878" rx="470" ry="28" fill="#FFFFFF" opacity="0.22" filter="url(#softBlur5)"></ellipse>
+    <line x1="64" y1="840" x2="1016" y2="840" stroke="#FFFFFF" stroke-opacity="0.42" stroke-width="1.6"></line>
+
+    <!-- timeline running toward gold horizon -->
+    <line x1="0" y1="837" x2="1080" y2="837" stroke="url(#tlGrad5)" stroke-width="3.5" stroke-linecap="round"></line>
+    <line x1="120" y1="847" x2="980" y2="847" stroke="url(#tlGrad5)" stroke-width="2" stroke-linecap="round" opacity="0.26"></line>
+
+    <!-- comet trail behind departing badge (lower-left -> horizon) -->
+    <path d="M612 872 C 720 838, 812 792, 906 726 C 918 736, 928 748, 934 762 C 840 828, 726 872, 630 900 Z" fill="url(#trail5)" filter="url(#softBlur5)" opacity="0.85"></path>
+    <path d="M628 886 C 736 852, 828 806, 916 742" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" filter="url(#coreBlur5)" opacity="0.9"></path>
+
+    <!-- 20% progress marker on the timeline -->
+    <circle cx="216" cy="837" r="11" fill="none" stroke="#FFFFFF" stroke-width="3"></circle>
+    <circle cx="216" cy="837" r="4.5" fill="#F5A623"></circle>
+
+    <!-- gold particles, warm side -->
+    <g filter="url(#partGlow5)" fill="#FFD166">
+      <circle cx="812" cy="640" r="4.4"></circle>
+      <circle cx="888" cy="700" r="3.4"></circle>
+      <circle cx="760" cy="588" r="3"></circle>
+      <circle cx="944" cy="656" r="4"></circle>
+      <circle cx="990" cy="742" r="3.4"></circle>
+      <circle cx="700" cy="700" r="2.8"></circle>
+      <circle cx="864" cy="588" r="3"></circle>
+    </g>
+  </svg>
+
+  <!-- 20% label above the marker -->
+  <div style="position:absolute;left:216px;top:790px;transform:translateX(-50%);font-weight:700;font-size:12px;letter-spacing:0.24em;color:rgba(255,255,255,0.82);text-shadow:0 1px 6px rgba(11,31,92,0.3);pointer-events:none;">20%</div>
+
+  <!-- badge floor reflection -->
+  <img src="assets/bsmart-badge.svg" alt="" style="position:absolute;left:846px;top:870px;width:118px;height:118px;transform:scaleY(-1);opacity:0.24;filter:blur(2px);-webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0) 70%);mask-image:linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0) 70%);pointer-events:none;">
+
+  <!-- BSmart badge flying toward the horizon (smaller) -->
+  <img src="assets/bsmart-badge.svg" alt="BSmart" style="position:absolute;left:846px;top:702px;width:118px;height:118px;filter:drop-shadow(0 16px 34px rgba(11,31,92,0.26));animation:bsFly5 6s ease-in-out infinite;">
+
+  <!-- logo top-left -->
+  <img src="assets/bbcincorp-logo-white.svg" alt="BBCIncorp" style="position:absolute;left:72px;top:70px;width:212px;height:auto;filter:drop-shadow(0 6px 18px rgba(11,31,92,0.30));">
+
+  <!-- centered headline block, upper half -->
+  <div style="position:absolute;left:64px;right:64px;top:270px;text-align:center;">
+    <div style="font-weight:800;font-size:58px;line-height:1.08;letter-spacing:-0.03em;color:#FFFFFF;text-shadow:0 6px 34px rgba(11,31,92,0.34),0 2px 6px rgba(11,31,92,0.26);text-wrap:balance;">BSmart is just the beginning.</div>
+    <div style="font-weight:800;font-size:58px;line-height:1.08;letter-spacing:-0.03em;color:#FFD166;text-shadow:0 6px 30px rgba(180,120,0,0.30);margin-top:10px;text-wrap:balance;">The new BBCIncorp is coming.</div>
+    <div style="margin-top:28px;font-weight:500;font-size:26px;line-height:1.5;color:#EAF2FF;text-shadow:0 2px 12px rgba(11,31,92,0.26);">Follow BBCIncorp — be first to meet the platform.</div>
+  </div>
+
+  <!-- bottom sign-off with gold rules -->
+  <div style="position:absolute;left:0;right:0;bottom:70px;display:flex;align-items:center;justify-content:center;gap:18px;">
+    <span style="width:52px;height:2px;background:linear-gradient(90deg, rgba(245,166,35,0), #F5A623);border-radius:2px;"></span>
+    <span style="font-weight:800;font-size:15px;letter-spacing:0.22em;color:#F5A623;text-shadow:0 2px 10px rgba(11,31,92,0.18);">THE NEW BBCINCORP · COMING SOON</span>
+    <span style="width:52px;height:2px;background:linear-gradient(90deg, #F5A623, rgba(245,166,35,0));border-radius:2px;"></span>
+  </div>
+
+</div>
+
+<script>
+// Print helper for the "-print" variant: wait for fonts + images, then open the
+// print dialog so the poster can be saved to PDF at its native 1080x1350.
+// Auto-print only runs when the page is opened with ?print=1 (or #print).
+addEventListener('load', () => {
+  const wantsPrint = /(?:\?|&)print=1\b/.test(location.search) || location.hash === '#print';
+  if (!wantsPrint) return;
+  (async () => {
+    try { await document.fonts.ready; } catch (e) {}
+    const imgs = Array.from(document.images).filter((i) => !i.complete);
+    await Promise.race([
+      Promise.allSettled(imgs.map((i) => i.decode().catch(() => {}))),
+      new Promise((r) => setTimeout(r, 8000)),
+    ]);
+    setTimeout(() => window.print(), 600);
+  })();
+});
+</script>
+</body>
+</html>
