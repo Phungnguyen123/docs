@@ -43,9 +43,13 @@ The design lives in a claude.ai/design project. Use the **DesignSync** MCP tool
 `claude.ai/design/p/<projectId>?file=<name>`.
 
 1. `list_files` → see the HTML files and the `assets/` they reference.
-2. `get_file` the target HTML (a single `*.dc.html`, or an assembled
-   `export/src/carousel-*-print.html` which already stitches every slide with
-   `@page` breaks — prefer the assembled `-print` file for a carousel).
+2. `get_file` the target HTML. This can be a single `*.dc.html`, an assembled
+   `export/src/carousel-*-print.html` (already stitches every slide with `@page`
+   breaks), or a composed carousel that pulls slides in via
+   `<dc-import name="Slide X">`. For the `<dc-import>` case, also `get_file` each
+   referenced `Slide X.dc.html` and save it alongside the carousel — `selfcontain.py`
+   resolves `<dc-import>` by reading those sibling files, inlining each slide's stage,
+   and merging their fonts/head (it also drops local `_ds/…` token stylesheets).
 3. `get_file` **every asset the HTML references** (grep the HTML for `src="assets/…"`
    and `url(assets/…)`). Save them into an `assets/` folder next to the HTML.
    - Text assets (`.svg`) come back as text → write as-is.

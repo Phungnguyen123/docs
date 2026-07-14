@@ -89,6 +89,72 @@ def embed_google_fonts(html: str) -> str:
     return html
 
 
+def _extract_slide(sub: str):
+    """From a slide .dc.html, return (helmet_head_html, stage_body_html)."""
+    helmet = ""
+    hm = re.search(r'<helmet[^>]*>(.*?)</helmet>', sub, re.S | re.I)
+    if hm:
+        helmet = hm.group(1)
+    xm = re.search(r'<x-dc[^>]*>(.*?)</x-dc>', sub, re.S | re.I)
+    body = xm.group(1) if xm else sub
+    body = re.sub(r'<helmet[^>]*>.*?</helmet>', '', body, flags=re.S | re.I)
+    return helmet, body.strip()
+
+
+def resolve_dc_imports(html: str, base_dir: str) -> str:
+    """Inline <dc-import name="X"> by reading sibling X.dc.html and merging its head.
+
+    Claude Design carousels compose slides with <dc-import>. Each named slide is a
+    separate .dc.html in the same folder; this pulls each slide's stage markup in place
+    and collects its <helmet> head fragments (fonts, token styles) into the parent head.
+    """
+    if "<dc-import" not in html or not base_dir:
+        return html
+    head_fragments = []
+
+    def repl(m):
+        name = m.group("name")
+        path = os.path.join(base_dir, name + ".dc.html")
+        if not os.path.exists(path):
+            print(f"  ! dc-import not found on disk: {name}.dc.html", file=sys.stderr)
+            return ""
+        with open(path, encoding="utf-8") as fh:
+            sub = fh.read()
+        helmet, body = _extract_slide(sub)
+        if helmet:
+            head_fragments.append(helmet)
+        return body
+
+    html = re.sub(r'<dc-import\b[^>]*\bname="(?P<name>[^"]+)"[^>]*>(?:</dc-import>)?',
+                  repl, html)
+
+    if head_fragments:
+        # dedupe identical lines across slide heads, preserve first-seen order
+        seen, merged = set(), []
+        for frag in head_fragments:
+            for line in frag.splitlines():
+                key = line.strip()
+                if key and key in seen:
+                    continue
+                seen.add(key)
+                merged.append(line)
+        merged_html = "\n".join(merged)
+        if re.search(r'</helmet>', html, re.I):
+            html = re.sub(r'</helmet>', merged_html + "\n</helmet>", html, count=1, flags=re.I)
+        elif "</head>" in html:
+            html = html.replace("</head>", merged_html + "\n</head>", 1)
+    return html
+
+
+def strip_local_ds_links(html: str) -> str:
+    """Drop <link href="_ds/…"> design-token stylesheets (local, would 404 in exports).
+
+    Claude Design slides reference design-system token CSS, but the slides use literal
+    colours (no CSS vars), so these are safe to remove for a self-contained export.
+    """
+    return re.sub(r'\s*<link[^>]+href="_ds/[^"]*"[^>]*>', '', html, flags=re.I)
+
+
 def unwrap_dc(html: str) -> str:
     """Strip the Claude Design (.dc.html) runtime, leaving a plain HTML document."""
     if "<x-dc" not in html and "support.js" not in html and "text/x-dc" not in html:
@@ -125,8 +191,10 @@ def normalize(html: str) -> str:
     return html
 
 
-def process(html: str) -> str:
+def process(html: str, base_dir: str = None) -> str:
+    html = resolve_dc_imports(html, base_dir)
     html = unwrap_dc(html)
+    html = strip_local_ds_links(html)
     html = embed_google_fonts(html)
     html = normalize(html)
     return html
@@ -141,7 +209,7 @@ def main() -> int:
 
     with open(args.input, encoding="utf-8") as fh:
         html = fh.read()
-    out_html = process(html)
+    out_html = process(html, base_dir=os.path.dirname(os.path.abspath(args.input)))
 
     out = args.output
     if not out:
