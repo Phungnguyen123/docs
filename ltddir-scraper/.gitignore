@@ -13,3 +13,9 @@ logs/*.log
 # Keep the sample input, ignore other local inputs
 input/*.xlsx
 !input/companies.xlsx
+
+# Hong Kong dataset files are large & downloaded locally; keep the folder readme
+input/hk/*.csv
+input/hk/*.xlsx
+input/hk/*.xls
+!input/hk/README.txt

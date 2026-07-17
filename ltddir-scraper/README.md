@@ -1,13 +1,14 @@
-# UK Company Lookup — ltddir.com scraper + Companies House API
+# Company Lookup — UK (Companies House) + Hong Kong (data.gov.hk) + ltddir scraper
 
 Look up a list of company names and export matched company details (number,
 status, incorporation date, registered address, directors, etc.) to an Excel
-workbook. Two interchangeable data sources, **same input and output format**:
+workbook. Multiple interchangeable data sources, **same input and output format**:
 
-| Entry point | Source | When to use |
-| --- | --- | --- |
-| **`main_ch.py`** ✅ recommended | Official **Companies House API** | Reliable, free, legal, structured. **Use this.** |
-| `main.py` | Scrapes **ltddir.com** via Playwright | Only if you specifically need ltddir's data. |
+| Entry point | Source | Region | When to use |
+| --- | --- | --- | --- |
+| **`main_ch.py`** ✅ | Official **Companies House API** | 🇬🇧 UK | Reliable, free, legal, structured. Full fields incl. directors. |
+| **`main_hk.py`** | Free **data.gov.hk** open dataset | 🇭🇰 Hong Kong | Free, no key. Number + address + live status (no directors). |
+| `main.py` | Scrapes **ltddir.com** via Playwright | 🇬🇧 UK | Only if you specifically need ltddir's data (Cloudflare-blocked). |
 
 > **Why two?** `ltddir.com` is a Cloudflare-protected *aggregator* — it re-packages
 > UK registry data and actively blocks automation (verified: `HTTP 403` +
@@ -40,7 +41,38 @@ No browser, no Cloudflare, resumable, same `result.xlsx` columns as below.
 
 ---
 
-## About the two sources
+## Hong Kong path (`main_hk.py`) — free, no API key
+
+Hong Kong's official registry (ICRIS) has **no free API** — directors and full
+particulars are pay-per-document (≈HK$22/company). But the Companies Registry
+publishes a **free** open dataset that covers every *live* local company:
+company number (CR No. / BRN), English/Chinese name, and registered office
+address — free for commercial re-use, updated daily.
+
+```bash
+# 1. Download the dataset (one file, CSV or XLSX) from:
+#    https://data.gov.hk/en-data/dataset/hk-cr-crdata-list-addr
+#    -> resource "Registered Office Address of Live Local Companies"
+#    Save it into  input/hk/
+
+# 2. Verify the columns were auto-detected correctly:
+python main_hk.py --show-columns
+
+# 3. Put your HK company names in input/companies.xlsx, then match:
+python main_hk.py --limit 5
+python main_hk.py
+```
+
+**What you get:** Company Number, Registered Address, Company Status (Live),
+match confidence — output to the same `result.xlsx`.
+**What you do NOT get** (needs paid ICRIS): directors, company secretary,
+incorporation date. Columns are auto-detected by header keyword, so the tool
+keeps working if the registry renames a column (e.g. CR No. → BRN); use
+`--show-columns` to confirm and adjust `detect_columns()` if ever needed.
+
+---
+
+## About the sources
 
 `ltddir.com` is **not** an official government registry — it is a public directory
 that *aggregates* company information. The **Companies House API** IS the official
@@ -87,11 +119,14 @@ ltddir-scraper/
 │   ├── parser.py             # label-driven field extraction (shared CompanyRecord)
 │   ├── search.py             # ltddir search: perform search, collect candidates
 │   ├── crawler.py            # ltddir: browser lifecycle + per-company pipeline
-│   ├── companies_house.py    # Companies House API client + JSON mappers
+│   ├── companies_house.py    # Companies House API client + JSON mappers (UK)
+│   ├── hk_registry.py        # data.gov.hk dataset loader + matcher (Hong Kong)
 │   └── exporter.py           # Excel I/O + resumable progress store (shared)
+├── input/hk/                 # put the Hong Kong data.gov.hk dataset file(s) here
 ├── tests/                    # offline unit tests (no network needed)
 ├── config.py                 # all settings & selector strategies
-├── main_ch.py                # ✅ entry point — Companies House API (recommended)
+├── main_ch.py                # ✅ entry point — Companies House API (UK)
+├── main_hk.py                # entry point — Hong Kong data.gov.hk matcher
 ├── main.py                   # entry point — ltddir.com scraper
 ├── inspect_site.py           # ltddir live-site inspection helper
 ├── requirements.txt
