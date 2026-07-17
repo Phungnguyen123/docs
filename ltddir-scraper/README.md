@@ -1,13 +1,51 @@
-# LTDDir Company Directory Scraper
+# UK Company Lookup — ltddir.com scraper + Companies House API
 
-A production-ready, resumable [Playwright](https://playwright.dev/python/) scraper
-that looks up a list of company names on the public business directory
-[ltddir.com](https://www.ltddir.com/companies/) and exports the matched company
-details to an Excel workbook.
+Look up a list of company names and export matched company details (number,
+status, incorporation date, registered address, directors, etc.) to an Excel
+workbook. Two interchangeable data sources, **same input and output format**:
 
-> **What this site is.** `ltddir.com` is **not** an official government registry.
-> It is a public directory that *aggregates* company information. Treat the data
-> as best-effort and verify anything important against an authoritative source.
+| Entry point | Source | When to use |
+| --- | --- | --- |
+| **`main_ch.py`** ✅ recommended | Official **Companies House API** | Reliable, free, legal, structured. **Use this.** |
+| `main.py` | Scrapes **ltddir.com** via Playwright | Only if you specifically need ltddir's data. |
+
+> **Why two?** `ltddir.com` is a Cloudflare-protected *aggregator* — it re-packages
+> UK registry data and actively blocks automation (verified: `HTTP 403` +
+> `__cf_chl_rt_tk` challenge that does not clear even in a real headed browser).
+> The UK registry it aggregates, **Companies House**, offers the same data through
+> a free official API with no anti-bot barrier — so for UK "LIMITED" companies the
+> API path is faster, more reliable, and ToS-compliant. The scraper is kept for
+> completeness and in case ltddir stops challenging automation.
+
+---
+
+## Quick start (recommended path — Companies House API)
+
+```bash
+cd ltddir-scraper
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# 1. Get a FREE API key (2 min): https://developer.company-information.service.gov.uk/
+#    Sign in -> "Your applications" -> create an application (Live) -> create an API key.
+# 2. Set it in your shell:
+export CH_API_KEY=your_key_here        # Windows PowerShell: $env:CH_API_KEY="your_key_here"
+
+# 3. Put your names in input/companies.xlsx (column "Company Name"), then:
+python main_ch.py --limit 5            # smoke test the first 5
+python main_ch.py                      # full run -> output/result.xlsx
+```
+
+No browser, no Cloudflare, resumable, same `result.xlsx` columns as below.
+
+---
+
+## About the two sources
+
+`ltddir.com` is **not** an official government registry — it is a public directory
+that *aggregates* company information. The **Companies House API** IS the official
+UK registry (companies incorporated in England & Wales, Scotland, and Northern
+Ireland). For authoritative data, prefer the API.
 
 ---
 
@@ -45,15 +83,17 @@ ltddir-scraper/
 │   └── scraper.log           # generated
 ├── scraper/
 │   ├── __init__.py
-│   ├── utils.py              # logging, normalisation, similarity, retries
-│   ├── parser.py             # label-driven field extraction
-│   ├── search.py             # perform search, collect candidates
-│   ├── crawler.py            # browser lifecycle + per-company pipeline
-│   └── exporter.py           # Excel I/O + resumable progress store
+│   ├── utils.py              # logging, normalisation, similarity, retries, anti-bot
+│   ├── parser.py             # label-driven field extraction (shared CompanyRecord)
+│   ├── search.py             # ltddir search: perform search, collect candidates
+│   ├── crawler.py            # ltddir: browser lifecycle + per-company pipeline
+│   ├── companies_house.py    # Companies House API client + JSON mappers
+│   └── exporter.py           # Excel I/O + resumable progress store (shared)
 ├── tests/                    # offline unit tests (no network needed)
 ├── config.py                 # all settings & selector strategies
-├── main.py                   # entry point
-├── inspect_site.py           # Phase-1 live site inspection helper
+├── main_ch.py                # ✅ entry point — Companies House API (recommended)
+├── main.py                   # entry point — ltddir.com scraper
+├── inspect_site.py           # ltddir live-site inspection helper
 ├── requirements.txt
 └── README.md
 ```
