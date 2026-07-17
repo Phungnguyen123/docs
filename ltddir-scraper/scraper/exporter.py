@@ -39,11 +39,14 @@ COLUMNS: list[str] = [
     # Investigation / OSINT signals (batch flags always; web columns need --enrich-web).
     "Website",
     "Website Matches Name",
+    "Domain Registered",
+    "Shop Scam Scan",
     "Other Domains",
     "Social Media",
     "Community Mentions",
     "Scam/Blacklist Mentions",
     "Risk Signals",
+    "Evidence",
 ]
 
 
@@ -122,3 +125,20 @@ def write_excel(rows: list[dict[str, Any]], out_path: Path) -> None:
     df = pd.DataFrame(rows, columns=COLUMNS) if rows else pd.DataFrame(columns=COLUMNS)
     df.to_excel(out_path, index=False, engine="openpyxl")
     get_logger().info("Wrote %d rows to %s", len(df), out_path)
+
+
+def write_workbook(
+    rows: list[dict[str, Any]],
+    out_path: Path,
+    extra_sheets: dict[str, "pd.DataFrame"] | None = None,
+) -> None:
+    """Write the main results plus optional extra sheets (e.g. clusters)."""
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    main_df = pd.DataFrame(rows, columns=COLUMNS) if rows else pd.DataFrame(columns=COLUMNS)
+    with pd.ExcelWriter(out_path, engine="openpyxl") as writer:
+        main_df.to_excel(writer, sheet_name="Companies", index=False)
+        for name, df in (extra_sheets or {}).items():
+            # Excel sheet names are capped at 31 chars and must be unique.
+            df.to_excel(writer, sheet_name=name[:31], index=False)
+    sheets = 1 + len(extra_sheets or {})
+    get_logger().info("Wrote %d rows to %s (%d sheets)", len(main_df), out_path, sheets)

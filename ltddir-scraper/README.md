@@ -118,18 +118,38 @@ Scam/Blacklist Mentions**, and more Risk Signals:
 - `scam / blacklist / complaint mention` (ScamAdviser / Trustpilot / RipoffReport)
 - Community mentions from Reddit / Quora / forums for brand-mention tracing
 
+**Deep signals (opt-in, combine with `--enrich-web`):**
+
+- `--whois` — free RDAP lookup of the website's **domain registration date**;
+  flags `newly registered domain (N days old)` (new domain + shop = classic scam).
+  Adds a **Domain Registered** column.
+- `--scan-shop` — fetches the website and **scores scam-shop indicators** (missing
+  contact/returns/privacy, urgency & steep-discount language, no business identity).
+  Adds a **Shop Scam Scan** column; flags `scam-shop score N/6`.
+- `--deep` — an extra scam/complaint-focused search query per company.
+
+**Verify everything — the Evidence column.** Every web-derived flag carries the
+source URL in an **Evidence** column (e.g. `website domain does not match company
+name: https://…`), and batch flags list the peer companies (`shared address with:
+A, B, C`). Nothing is a verdict — each flag is a lead to check by hand.
+
+**Cluster sheets.** The output workbook has extra tabs — **Shared Addresses** and
+**Incorporation Clusters** — grouping linked companies so a shell-company network
+is visible at a glance.
+
 ```bash
 # Configure ONE provider:
 export SERPAPI_KEY=...                        # SerpAPI, or
 export GOOGLE_API_KEY=...  GOOGLE_CSE_ID=...   # Google Programmable Search (CSE)
 
-python main_hk.py --probe-web "HELENA LIMITED"                  # inspect one company's signals
-python main_hk.py --input input/hongkong.xlsx --enrich-web      # 1 search/company
-python main_hk.py --input input/hongkong.xlsx --enrich-web --deep  # + a scam/complaint query each
+python main_hk.py --probe-web "HELENA LIMITED"                 # inspect one company's signals
+python main_hk.py --input input/hongkong.xlsx --enrich-web     # web signals (1 search/company)
+python main_hk.py --input input/hongkong.xlsx --enrich-web --whois --scan-shop --deep  # everything
 ```
 
-Everything web-derived is **best-effort OSINT, not proof** — each Risk Signal is
-a lead to review by hand, not a verdict. `--deep` doubles API calls per company.
+All web-derived output is **best-effort OSINT, not proof**. `--deep`/`--scan-shop`/
+`--whois` add network calls (and `--deep` doubles search-API usage) — smoke-test
+with `--limit 5` first.
 
 > **Cannot be obtained at all:** *UBO / beneficial-owner nationality* — Hong
 > Kong's Significant Controllers Register is private by law (inspectable only by
@@ -189,7 +209,9 @@ ltddir-scraper/
 │   ├── companies_house.py    # Companies House API client + JSON mappers (UK)
 │   ├── hk_api.py             # data.cr.gov.hk live API client (Hong Kong, default)
 │   ├── hk_registry.py        # data.gov.hk CSV/XLSX loader + matcher (Hong Kong)
-│   ├── web_enrich.py         # optional best-effort website/social lookup
+│   ├── web_enrich.py         # OSINT signal collector + batch clusters
+│   ├── domain_age.py         # RDAP domain-registration-age lookup
+│   ├── shop_scan.py          # scam-shop page scorer
 │   └── exporter.py           # Excel I/O + resumable progress store (shared)
 ├── input/hk/                 # put the Hong Kong data.gov.hk dataset file(s) here
 ├── tests/                    # offline unit tests (no network needed)

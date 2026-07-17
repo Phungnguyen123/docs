@@ -107,3 +107,29 @@ def test_annotate_batch_preserves_existing_signals() -> None:
     ]
     annotate_batch_signals(rows)
     assert rows[0]["Risk Signals"].startswith("website domain does not match company name")
+
+
+def test_extract_signals_evidence_has_urls() -> None:
+    results = [
+        {"link": "https://cheap-outlet-deals.shop/p", "title": "Buy now sale", "snippet": "outlet discount"},
+        {"link": "https://www.scamadviser.com/check/cheap-outlet-deals.shop", "title": "scam?", "snippet": "fraud"},
+    ]
+    sig = extract_signals(results, "HELENA LIMITED")
+    ev = sig.evidence_cell()
+    # Every flag with evidence must carry a verifiable URL.
+    assert "https://cheap-outlet-deals.shop/p" in ev  # mismatch + shopping evidence
+    assert "scamadviser.com" in ev
+    assert "website domain does not match company name:" in ev
+
+
+def test_annotate_batch_evidence_lists_peers() -> None:
+    rows = [
+        {"Input Company Name": "AAA LTD", "Registered Address": "1 RD, HK", "Incorporation Date": "2025-01-01", "Risk Signals": "", "Evidence": ""},
+        {"Input Company Name": "BBB LTD", "Registered Address": "1 rd, hk", "Incorporation Date": "2025-01-01", "Risk Signals": "", "Evidence": ""},
+        {"Input Company Name": "CCC LTD", "Registered Address": "1 RD, HK", "Incorporation Date": "2025-01-01", "Risk Signals": "", "Evidence": ""},
+    ]
+    annotate_batch_signals(rows, min_shared=2, min_bulk=3)
+    # AAA's evidence should name its address peers BBB and CCC.
+    assert "BBB LTD" in rows[0]["Evidence"]
+    assert "CCC LTD" in rows[0]["Evidence"]
+    assert "shared address with:" in rows[0]["Evidence"]

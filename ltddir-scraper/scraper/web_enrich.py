@@ -30,6 +30,7 @@ from difflib import SequenceMatcher
 from typing import Any
 from urllib.parse import urlparse
 
+import pandas as pd
 import requests
 
 from .utils import get_logger, normalize_name
@@ -171,7 +172,14 @@ class WebSignals:
     socials: list[str] = field(default_factory=list)
     community: list[str] = field(default_factory=list)
     scam_mentions: list[str] = field(default_factory=list)
-    risk_signals: list[str] = field(default_factory=list)
+    domain_registered: str = ""  # ISO date of the website domain's registration
+    shop_scan: str = ""  # summary of scam-shop indicators (see shop_scan.py)
+    # Each flag is (label, evidence) — evidence is a URL/detail to verify by hand.
+    flags: list[tuple[str, str]] = field(default_factory=list)
+
+    def add_flag(self, label: str, evidence: str = "") -> None:
+        """Record a risk flag with an optional evidence URL/detail."""
+        self.flags.append((label, evidence))
 
     def match_label(self) -> str:
         if self.website_matches_name is None:
@@ -195,7 +203,15 @@ class WebSignals:
         return self._join(self.scam_mentions)
 
     def risk_cell(self) -> str:
-        return "; ".join(dict.fromkeys(self.risk_signals))
+        return "; ".join(dict.fromkeys(label for label, _ in self.flags))
+
+    def evidence_cell(self) -> str:
+        """Render 'label: url' for each flag that has evidence, for verification."""
+        seen: dict[str, str] = {}
+        for label, ev in self.flags:
+            if ev and label not in seen:
+                seen[label] = ev
+        return " | ".join(f"{label}: {ev}" for label, ev in seen.items())
 
 
 def extract_signals(results: list[dict[str, str]], company_name: str) -> WebSignals:
@@ -230,65 +246,149 @@ def extract_signals(results: list[dict[str, str]], company_name: str) -> WebSign
                 seen_domains.add(dom)
                 sig.other_domains.append(dom)
 
-    # Scam keywords anywhere in the result text.
+    # Scam keywords anywhere in the result text (record the URL as evidence).
+    scam_keyword_url = ""
     for r in results:
         text = _text_of(r)
         if any(k in text for k in _SCAM_KEYWORDS):
-            host = registrable_domain(r.get("link", "")) or "search result"
+            link = r.get("link", "")
+            host = registrable_domain(link) or "search result"
             sig.scam_mentions.append(f"{host} (keyword)")
+            scam_keyword_url = scam_keyword_url or link
 
-    # Compile risk flags.
+    # Compile risk flags, each with an evidence URL/detail where possible.
     if not website_urls:
-        sig.risk_signals.append("no website found in search")
+        sig.add_flag("no website found in search")
     if sig.website and sig.website_matches_name is False:
-        sig.risk_signals.append("website domain does not match company name")
+        sig.add_flag("website domain does not match company name", sig.website)
     distinct = len({registrable_domain(u) for u in website_urls})
     if distinct >= 2:
-        sig.risk_signals.append(f"multiple distinct domains ({distinct})")
-    if any(any(k in _text_of(r) for k in _SHOPPING_KEYWORDS) for r in results):
-        sig.risk_signals.append("shopping / e-commerce keywords in results")
+        sig.add_flag(
+            f"multiple distinct domains ({distinct})",
+            ", ".join(dict.fromkeys(registrable_domain(u) for u in website_urls)),
+        )
+    shop_url = next(
+        (r.get("link", "") for r in results if any(k in _text_of(r) for k in _SHOPPING_KEYWORDS)),
+        "",
+    )
+    if shop_url:
+        sig.add_flag("shopping / e-commerce keywords in results", shop_url)
     if sig.scam_mentions:
-        sig.risk_signals.append("scam / blacklist / complaint mention")
+        scam_url = next((m for m in sig.scam_mentions if m.startswith("http")), "") or scam_keyword_url
+        sig.add_flag("scam / blacklist / complaint mention", scam_url)
     return sig
 
 
 # --------------------------------------------------------------------------- #
 # Batch (no-API) analysis over the whole list
 # --------------------------------------------------------------------------- #
+def _peers(rows: list[dict[str, str]], key_fn, value, self_name: str, cap: int = 6) -> list[str]:  # noqa: ANN001
+    """Return other companies' names sharing a key value (for evidence)."""
+    names = [
+        r.get("Input Company Name", "")
+        for r in rows
+        if key_fn(r) == value and r.get("Input Company Name", "") != self_name
+    ]
+    return names[:cap]
+
+
 def annotate_batch_signals(
     rows: list[dict[str, str]], *, min_shared: int = 2, min_bulk: int = 3
 ) -> list[dict[str, str]]:
-    """Add cross-company red flags to each row's 'Risk Signals' cell.
+    """Add cross-company red flags to each row's 'Risk Signals' + 'Evidence'.
 
     Uses only registry data already collected (no network): shared registered
-    address, bulk incorporation dates, and random-looking names.
+    address, bulk incorporation dates, and random-looking names. Evidence lists
+    the peer companies so the flag can be verified.
     """
-    addr_counts = Counter(
-        normalize_name(r.get("Registered Address", ""))
-        for r in rows
-        if r.get("Registered Address", "").strip()
-    )
-    inc_counts = Counter(
-        r.get("Incorporation Date", "")
-        for r in rows
-        if r.get("Incorporation Date", "").strip()
-    )
+    def _addr_key(r: dict[str, str]) -> str:
+        return normalize_name(r.get("Registered Address", ""))
+
+    def _inc_key(r: dict[str, str]) -> str:
+        return r.get("Incorporation Date", "")
+
+    addr_counts = Counter(_addr_key(r) for r in rows if r.get("Registered Address", "").strip())
+    inc_counts = Counter(_inc_key(r) for r in rows if r.get("Incorporation Date", "").strip())
 
     for r in rows:
-        extra: list[str] = []
-        addr = normalize_name(r.get("Registered Address", ""))
+        labels: list[str] = []
+        evidence: list[str] = []
+        name = r.get("Input Company Name", "")
+
+        addr = _addr_key(r)
         if addr and addr_counts[addr] >= min_shared:
-            extra.append(f"shared registered address ({addr_counts[addr]} companies)")
-        inc = r.get("Incorporation Date", "")
+            labels.append(f"shared registered address ({addr_counts[addr]} companies)")
+            peers = _peers(rows, _addr_key, addr, name)
+            evidence.append(
+                "shared address with: " + ", ".join(peers) + (" ..." if addr_counts[addr] - 1 > len(peers) else "")
+            )
+
+        inc = _inc_key(r)
         if inc and inc_counts[inc] >= min_bulk:
-            extra.append(f"bulk incorporation date ({inc_counts[inc]} on {inc})")
-        if looks_random_name(r.get("Input Company Name", "")):
-            extra.append("random-looking name")
-        if extra:
-            existing = r.get("Risk Signals", "")
-            merged = "; ".join(x for x in ([existing] + extra) if x)
-            r["Risk Signals"] = merged
+            labels.append(f"bulk incorporation date ({inc_counts[inc]} on {inc})")
+            peers = _peers(rows, _inc_key, inc, name)
+            evidence.append(f"same incorporation date ({inc}) as: " + ", ".join(peers) + (" ..." if inc_counts[inc] - 1 > len(peers) else ""))
+
+        if looks_random_name(name):
+            labels.append("random-looking name")
+
+        if labels:
+            r["Risk Signals"] = "; ".join(x for x in [r.get("Risk Signals", "")] + labels if x)
+        if evidence:
+            r["Evidence"] = " | ".join(x for x in [r.get("Evidence", "")] + evidence if x)
     return rows
+
+
+def build_cluster_sheets(
+    rows: list[dict[str, str]], *, min_shared: int = 2, min_bulk: int = 3
+) -> dict[str, "pd.DataFrame"]:
+    """Build summary DataFrames grouping companies by shared address / date.
+
+    Returns a dict of {sheet_name: DataFrame}, only for clusters that actually
+    exist, so an investigator can see linked groups at a glance.
+    """
+    sheets: dict[str, pd.DataFrame] = {}
+
+    addr_groups: dict[str, list[dict[str, str]]] = {}
+    for r in rows:
+        key = normalize_name(r.get("Registered Address", ""))
+        if key:
+            addr_groups.setdefault(key, []).append(r)
+    addr_rows = [
+        {
+            "Registered Address": grp[0].get("Registered Address", ""),
+            "Company Count": len(grp),
+            "Companies": ", ".join(g.get("Input Company Name", "") for g in grp),
+            "Company Numbers": ", ".join(g.get("Company Number", "") for g in grp),
+        }
+        for grp in addr_groups.values()
+        if len(grp) >= min_shared
+    ]
+    if addr_rows:
+        sheets["Shared Addresses"] = pd.DataFrame(
+            sorted(addr_rows, key=lambda x: -x["Company Count"])
+        )
+
+    inc_groups: dict[str, list[dict[str, str]]] = {}
+    for r in rows:
+        key = r.get("Incorporation Date", "")
+        if key:
+            inc_groups.setdefault(key, []).append(r)
+    inc_rows = [
+        {
+            "Incorporation Date": date,
+            "Company Count": len(grp),
+            "Companies": ", ".join(g.get("Input Company Name", "") for g in grp),
+        }
+        for date, grp in inc_groups.items()
+        if len(grp) >= min_bulk
+    ]
+    if inc_rows:
+        sheets["Incorporation Clusters"] = pd.DataFrame(
+            sorted(inc_rows, key=lambda x: -x["Company Count"])
+        )
+
+    return sheets
 
 
 # --------------------------------------------------------------------------- #

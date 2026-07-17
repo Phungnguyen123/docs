@@ -18,19 +18,28 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
 import config
-from scraper.exporter import COLUMNS, ProgressStore, read_input_companies, write_excel
+from scraper.exporter import COLUMNS, ProgressStore, read_input_companies, write_workbook
 from scraper.hk_api import (
     HKApiError,
     HKCrApiClient,
     match_records,
     record_to_company,
 )
+from scraper.domain_age import DomainAgeLookup, _today_utc, young_domain_flag
+from scraper.shop_scan import ShopScanner
 from scraper.utils import get_logger, setup_logging
-from scraper.web_enrich import WebEnricher, annotate_batch_signals, extract_signals
+from scraper.web_enrich import (
+    WebEnricher,
+    annotate_batch_signals,
+    build_cluster_sheets,
+    extract_signals,
+    registrable_domain,
+)
 
 DEFAULT_DATASET = config.BASE_DIR / "input" / "hk"
 HK_OUTPUT, HK_PROGRESS = config.tool_paths("hk")
@@ -51,6 +60,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--probe-web", type=str, default=None, help="dump raw web-search results + signals for one name and exit")
     p.add_argument("--enrich-web", action="store_true", help="add web/OSINT signal columns (needs a search API key)")
     p.add_argument("--deep", action="store_true", help="with --enrich-web: run an extra scam/complaint query per company")
+    p.add_argument("--whois", action="store_true", help="with --enrich-web: look up domain registration age (RDAP, free)")
+    p.add_argument("--scan-shop", action="store_true", help="with --enrich-web: fetch + score the website for scam-shop signals")
     p.add_argument("--limit", type=int, default=0, help="process at most N companies")
     p.add_argument("--fresh", action="store_true", help="ignore prior progress")
     p.add_argument("--show-columns", action="store_true", help="(CSV mode) print detected columns")
@@ -91,34 +102,62 @@ def _to_row(name: str, match, record, signals=None) -> dict[str, str]:  # noqa: 
     if signals is not None:
         row["Website"] = signals.website
         row["Website Matches Name"] = signals.match_label()
+        row["Domain Registered"] = signals.domain_registered
+        row["Shop Scam Scan"] = signals.shop_scan
         row["Other Domains"] = signals.other_domains_cell()
         row["Social Media"] = signals.socials_cell()
         row["Community Mentions"] = signals.community_cell()
         row["Scam/Blacklist Mentions"] = signals.scam_cell()
         row["Risk Signals"] = signals.risk_cell()
+        row["Evidence"] = signals.evidence_cell()
     return row
 
 
-def _make_enricher(args: argparse.Namespace, log) -> WebEnricher | None:  # noqa: ANN001
-    """Build a WebEnricher if --enrich-web is set and a provider is configured."""
+@dataclass
+class _Tools:
+    """Optional deep-signal helpers, built once per run."""
+
+    enricher: "WebEnricher | None" = None
+    age: "DomainAgeLookup | None" = None
+    scanner: "ShopScanner | None" = None
+
+
+def _make_tools(args: argparse.Namespace, log) -> _Tools:  # noqa: ANN001
+    """Build the enrichment helpers requested by the CLI flags."""
     if not args.enrich_web:
-        return None
+        return _Tools()
     enricher = WebEnricher()
     if not enricher.enabled():
         log.warning(
             "--enrich-web set but no search API key found; "
             "set SERPAPI_KEY or GOOGLE_API_KEY + GOOGLE_CSE_ID. Skipping enrichment."
         )
-        return None
+        return _Tools()
     log.info("Web enrichment enabled via %s", enricher.provider())
-    return enricher
+    return _Tools(
+        enricher=enricher,
+        age=DomainAgeLookup() if args.whois else None,
+        scanner=ShopScanner() if args.scan_shop else None,
+    )
 
 
-def _enrich(enricher: WebEnricher | None, args, name: str, match, region_hint: str):  # noqa: ANN001
-    """Return WebSignals for a matched company, or None."""
-    if enricher is None or match.status == "not_found":
+def _enrich(tools: _Tools, args, name: str, match, region_hint: str):  # noqa: ANN001
+    """Return enriched WebSignals for a matched company, or None."""
+    if tools.enricher is None or match.status == "not_found":
         return None
-    signals = enricher.gather(match.matched_name or name, region_hint=region_hint, deep=args.deep)
+    signals = tools.enricher.gather(match.matched_name or name, region_hint=region_hint, deep=args.deep)
+    if signals.website:
+        if tools.age is not None:
+            iso = tools.age.registration_date(registrable_domain(signals.website))
+            signals.domain_registered = iso
+            flag = young_domain_flag(iso, today=_today_utc())
+            if flag:
+                signals.add_flag(*flag)
+        if tools.scanner is not None:
+            scan = tools.scanner.scan(signals.website)
+            signals.shop_scan = scan.summary()
+            if scan.fetched and scan.score >= 3:
+                signals.add_flag(f"scam-shop score {scan.score}/6", signals.website)
     time.sleep(0.3)  # pace the search API too
     return signals
 
@@ -127,7 +166,7 @@ def run_api_mode(args: argparse.Namespace) -> int:
     """Look up each company via the live CR API. Resumable."""
     log = get_logger()
     client = HKCrApiClient()
-    enricher = _make_enricher(args, log)
+    tools = _make_tools(args, log)
 
     companies = read_input_companies(args.input)
     if args.limit > 0:
@@ -158,7 +197,7 @@ def run_api_mode(args: argparse.Namespace) -> int:
             row["Remarks"] = f"error: {exc}"
             progress.append(row)
             continue
-        presence = _enrich(enricher, args, name, match, region_hint="Hong Kong")
+        presence = _enrich(tools, args, name, match, region_hint="Hong Kong")
         log.info("[%d/%d] %s -> %s (%.3f)", i, len(todo), name, match.status, match.confidence)
         progress.append(_to_row(name, match, record, presence))
         time.sleep(0.5)  # polite pacing
@@ -166,7 +205,7 @@ def run_api_mode(args: argparse.Namespace) -> int:
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
     ordered = [rows_by_name[c] for c in companies if c in rows_by_name]
     annotate_batch_signals(ordered)
-    write_excel(ordered, args.output)
+    write_workbook(ordered, args.output, build_cluster_sheets(ordered))
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
 
@@ -204,7 +243,7 @@ def run_csv_mode(args: argparse.Namespace) -> int:
         return 2
 
     index = HKRegistryIndex(df, cols)
-    enricher = _make_enricher(args, log)
+    tools = _make_tools(args, log)
     companies = read_input_companies(args.input)
     if args.limit > 0:
         companies = companies[: args.limit]
@@ -223,14 +262,14 @@ def run_csv_mode(args: argparse.Namespace) -> int:
             name, min_confidence=s.min_confidence, strong_confidence=s.strong_confidence
         )
         record = index.row_to_record(row_data) if row_data else None
-        presence = _enrich(enricher, args, name, match, region_hint="Hong Kong")
+        presence = _enrich(tools, args, name, match, region_hint="Hong Kong")
         log.info("[%d/%d] %s -> %s (%.3f)", i, len(todo), name, match.status, match.confidence)
         progress.append(_to_row(name, match, record, presence))
 
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
     ordered = [rows_by_name[c] for c in companies if c in rows_by_name]
     annotate_batch_signals(ordered)
-    write_excel(ordered, args.output)
+    write_workbook(ordered, args.output, build_cluster_sheets(ordered))
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
 
