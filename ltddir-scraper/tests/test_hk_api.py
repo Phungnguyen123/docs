@@ -56,6 +56,26 @@ def test_record_english_name_ignores_null_chinese() -> None:
     assert record_english_name(REAL_RECORD) == "HELENA LIMITED"
 
 
+def test_record_to_company_chinese_name_and_redomiciliation() -> None:
+    rec = {
+        "Brn": "C0009",
+        "English_Company_Name": "DRAGON LIMITED",
+        "Chinese_Company_Name": "龍有限公司",
+        "Address_of_Registered_Office": "1 Road",
+        "Re-domiciliation_Date": "15-06-2024",
+    }
+    r = record_to_company(rec)
+    assert r.company_name_other == "龍有限公司"
+    assert r.redomiciliation_date == "2024-06-15"
+
+
+def test_record_to_company_null_chinese_stays_blank() -> None:
+    # The real HELENA record has Chinese_Company_Name == "NULL".
+    r = record_to_company(REAL_RECORD)
+    assert r.company_name_other == ""
+    assert r.redomiciliation_date == ""
+
+
 def test_strip_legal_suffix() -> None:
     assert strip_legal_suffix("GOLDEN DRAGON LIMITED") == "GOLDEN DRAGON"
     assert strip_legal_suffix("JADE PHOENIX LTD.") == "JADE PHOENIX"

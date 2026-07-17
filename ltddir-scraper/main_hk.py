@@ -80,6 +80,8 @@ def _to_row(name: str, match, record) -> dict[str, str]:  # noqa: ANN001
                 "Previous Names": record.previous_names,
                 "Remarks": record.remarks,
                 "Source URL": record.source_url,
+                "Company Name (Chinese)": record.company_name_other,
+                "Re-domiciliation Date": record.redomiciliation_date,
             }
         )
     return row

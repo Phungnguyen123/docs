@@ -46,6 +46,8 @@ _CHINESE_HINTS = ("chi", "chinese", "_tc", "_sc", "中文")
 _ADDRESS_HINTS = ("addr", "address")
 _TYPE_HINTS = ("company_type", "comp_type", "type")
 _INCORP_HINTS = ("date_of_incorporation", "incorporation", "incorp")
+_CHINESE_NAME_HINTS = ("chinese_company_name", "chinese_name", "name_chi", "chinese")
+_REDOM_HINTS = ("domicil",)  # matches "Re-domiciliation_Date"
 # Values that mean "empty" in this API (it returns the literal string "NULL").
 _NULL_TOKENS = {"", "null", "none", "n/a", "nil"}
 
@@ -195,6 +197,8 @@ def record_to_company(record: dict[str, Any]) -> CompanyRecord:
         registered_address=address,
         remarks="from data.gov.hk CR API (no directors/secretary)",
         source_url=DATASET_URL,
+        company_name_other=_find_field(record, _CHINESE_NAME_HINTS),
+        redomiciliation_date=normalize_date(_find_field(record, _REDOM_HINTS)),
     )
 
 

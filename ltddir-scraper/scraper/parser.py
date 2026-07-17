@@ -34,6 +34,9 @@ class CompanyRecord:
     previous_names: str = ""
     remarks: str = ""
     source_url: str = ""
+    # Optional extras populated by some sources (e.g. Hong Kong).
+    company_name_other: str = ""  # non-English name (e.g. Chinese)
+    redomiciliation_date: str = ""
 
     def as_dict(self) -> dict[str, str]:
         """Return the record as a plain dict."""

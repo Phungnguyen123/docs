@@ -33,6 +33,9 @@ COLUMNS: list[str] = [
     "Remarks",
     "Source URL",
     "Crawl Timestamp",
+    # Optional extras (blank unless the source provides them, e.g. Hong Kong).
+    "Company Name (Chinese)",
+    "Re-domiciliation Date",
 ]
 
 
