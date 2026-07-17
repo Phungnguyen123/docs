@@ -7,7 +7,7 @@ venv/
 
 # Runtime output & logs (keep the folders, ignore contents)
 output/*.xlsx
-output/_progress.jsonl
+output/_progress*.jsonl
 logs/*.log
 
 # Keep the sample input, ignore other local inputs

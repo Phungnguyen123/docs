@@ -32,13 +32,14 @@ from scraper.hk_api import (
 from scraper.utils import get_logger, setup_logging
 
 DEFAULT_DATASET = config.BASE_DIR / "input" / "hk"
+HK_OUTPUT, HK_PROGRESS = config.tool_paths("hk")
 
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     p = argparse.ArgumentParser(description="Hong Kong company lookup (data.gov.hk)")
     p.add_argument("--input", type=Path, default=config.INPUT_FILE, help="input .xlsx of names")
-    p.add_argument("--output", type=Path, default=config.OUTPUT_FILE, help="output .xlsx")
+    p.add_argument("--output", type=Path, default=HK_OUTPUT, help="output .xlsx")
     p.add_argument(
         "--dataset",
         type=Path,
@@ -93,9 +94,9 @@ def run_api_mode(args: argparse.Namespace) -> int:
     if args.limit > 0:
         companies = companies[: args.limit]
 
-    progress = ProgressStore(config.PROGRESS_FILE)
-    if args.fresh and config.PROGRESS_FILE.exists():
-        config.PROGRESS_FILE.unlink()
+    progress = ProgressStore(HK_PROGRESS)
+    if args.fresh and HK_PROGRESS.exists():
+        HK_PROGRESS.unlink()
 
     done = progress.completed_names()
     todo = [c for c in companies if c not in done]
@@ -166,9 +167,9 @@ def run_csv_mode(args: argparse.Namespace) -> int:
     if args.limit > 0:
         companies = companies[: args.limit]
 
-    progress = ProgressStore(config.PROGRESS_FILE)
-    if args.fresh and config.PROGRESS_FILE.exists():
-        config.PROGRESS_FILE.unlink()
+    progress = ProgressStore(HK_PROGRESS)
+    if args.fresh and HK_PROGRESS.exists():
+        HK_PROGRESS.unlink()
 
     done = progress.completed_names()
     todo = [c for c in companies if c not in done]

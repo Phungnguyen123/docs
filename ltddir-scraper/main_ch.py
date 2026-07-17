@@ -34,12 +34,14 @@ from scraper.exporter import ProgressStore, read_input_companies, write_excel
 from scraper.parser import CompanyRecord
 from scraper.utils import choose_best_match, get_logger, setup_logging
 
+CH_OUTPUT, CH_PROGRESS = config.tool_paths("uk")
+
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     p = argparse.ArgumentParser(description="Companies House company lookup")
     p.add_argument("--input", type=Path, default=config.INPUT_FILE, help="input .xlsx")
-    p.add_argument("--output", type=Path, default=config.OUTPUT_FILE, help="output .xlsx")
+    p.add_argument("--output", type=Path, default=CH_OUTPUT, help="output .xlsx")
     p.add_argument("--limit", type=int, default=0, help="process at most N companies")
     p.add_argument("--fresh", action="store_true", help="ignore prior progress")
     p.add_argument("--verbose", action="store_true", help="debug logging")
@@ -122,9 +124,9 @@ def main() -> int:
     if args.limit > 0:
         companies = companies[: args.limit]
 
-    progress = ProgressStore(config.PROGRESS_FILE)
-    if args.fresh and config.PROGRESS_FILE.exists():
-        config.PROGRESS_FILE.unlink()
+    progress = ProgressStore(CH_PROGRESS)
+    if args.fresh and CH_PROGRESS.exists():
+        CH_PROGRESS.unlink()
 
     done = progress.completed_names()
     todo = [c for c in companies if c not in done]

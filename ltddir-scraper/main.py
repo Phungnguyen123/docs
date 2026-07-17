@@ -27,12 +27,14 @@ from scraper.exporter import (
 )
 from scraper.utils import setup_logging
 
+LTDDIR_OUTPUT, LTDDIR_PROGRESS = config.tool_paths("ltddir")
+
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     p = argparse.ArgumentParser(description="LTDDir company directory scraper")
     p.add_argument("--input", type=Path, default=config.INPUT_FILE, help="input .xlsx")
-    p.add_argument("--output", type=Path, default=config.OUTPUT_FILE, help="output .xlsx")
+    p.add_argument("--output", type=Path, default=LTDDIR_OUTPUT, help="output .xlsx")
     p.add_argument("--show", action="store_true", help="run with a visible browser")
     p.add_argument("--limit", type=int, default=0, help="process at most N companies")
     p.add_argument("--fresh", action="store_true", help="ignore prior progress and restart")
@@ -57,9 +59,9 @@ async def run(args: argparse.Namespace) -> int:
     if args.limit > 0:
         companies = companies[: args.limit]
 
-    progress = ProgressStore(config.PROGRESS_FILE)
-    if args.fresh and config.PROGRESS_FILE.exists():
-        config.PROGRESS_FILE.unlink()
+    progress = ProgressStore(LTDDIR_PROGRESS)
+    if args.fresh and LTDDIR_PROGRESS.exists():
+        LTDDIR_PROGRESS.unlink()
         logger.info("Cleared prior progress (--fresh)")
 
     done = progress.completed_names()

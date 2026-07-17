@@ -34,10 +34,16 @@ export CH_API_KEY=your_key_here        # Windows PowerShell: $env:CH_API_KEY="yo
 
 # 3. Put your names in input/companies.xlsx (column "Company Name"), then:
 python main_ch.py --limit 5            # smoke test the first 5
-python main_ch.py                      # full run -> output/result.xlsx
+python main_ch.py                      # full run -> output/result_uk.xlsx
 ```
 
-No browser, no Cloudflare, resumable, same `result.xlsx` columns as below.
+No browser, no Cloudflare, resumable, same columns as below.
+
+> **Each tool writes its own files** so they never overwrite each other:
+> `main_ch.py` → `output/result_uk.xlsx`, `main_hk.py` → `output/result_hk.xlsx`,
+> `main.py` → `output/result_ltddir.xlsx` (each with its own resume log). Pass
+> `--output` to choose a different path. Because progress is per-tool, switching
+> regions does **not** need `--fresh`.
 
 ---
 

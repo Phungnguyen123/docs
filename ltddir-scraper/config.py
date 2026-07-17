@@ -21,6 +21,15 @@ PROGRESS_FILE: Path = BASE_DIR / "output" / "_progress.jsonl"
 LOG_FILE: Path = BASE_DIR / "logs" / "scraper.log"
 
 
+def tool_paths(tool: str) -> tuple[Path, Path]:
+    """Return per-tool (output_xlsx, progress_jsonl) so the entry points don't
+    share a result/progress file. ``tool`` is a short slug like 'uk' or 'hk'."""
+    return (
+        BASE_DIR / "output" / f"result_{tool}.xlsx",
+        BASE_DIR / "output" / f"_progress_{tool}.jsonl",
+    )
+
+
 @dataclass(frozen=True)
 class Settings:
     """Runtime settings for a scraping run."""
