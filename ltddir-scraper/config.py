@@ -53,6 +53,9 @@ class Settings:
     retry_backoff_base_s: float = 2.0  # 2s, 4s, 8s
     delay_min_s: float = 1.0
     delay_max_s: float = 3.0
+    # How long to wait for an anti-bot (e.g. Cloudflare) challenge to auto-solve
+    # in a real browser before treating the company as blocked.
+    challenge_wait_s: float = 40.0
 
     # --- Matching ---------------------------------------------------------- #
     # Below this similarity a match is recorded as "low_confidence".

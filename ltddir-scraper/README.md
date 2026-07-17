@@ -175,20 +175,35 @@ or failure, and duration. Use `--verbose` for debug-level detail.
 
 ---
 
-## Anti-bot handling
+## Anti-bot handling — important
 
-The crawler fingerprints common block pages (Cloudflare "Just a moment…",
-CAPTCHA, "access denied", rate-limit notices) and raises a clear `AntiBotError`,
-recorded in `Remarks`, instead of silently scraping a challenge page. If the site
-begins actively challenging automation you have three escalation options:
+**ltddir.com is protected by Cloudflare.** A plain automated request receives
+`HTTP 403` and a redirect to a Cloudflare challenge URL (`…?__cf_chl_rt_tk=…`),
+so the real page (and its search box) never loads in a bare headless browser.
 
-1. Increase `delay_min_s`/`delay_max_s` and reduce concurrency (already 1 page at
-   a time) to stay under rate limits.
-2. Run with `--show` (non-headless) — challenge pages sometimes clear with a real
-   browser profile.
-3. If a **hidden JSON API** is found by `inspect_site.py`, prefer calling it
-   directly (faster and more stable than DOM scraping); point `search.py` at that
-   endpoint.
+This project mitigates that, but cannot guarantee a bypass:
+
+- **Light stealth** — launches with `--disable-blink-features=AutomationControlled`
+  and injects an init script hiding `navigator.webdriver`, reducing trivial
+  fingerprinting.
+- **Challenge auto-solve wait** — on detecting a challenge (via the URL marker,
+  a 403/429/503 status, or interstitial text) the crawler waits up to
+  `challenge_wait_s` (default 40s) for a real browser to clear it, instead of
+  failing instantly. Run **headed** (`--show`) for the best chance — Cloudflare's
+  *managed* challenge often auto-solves in a visible browser.
+- If it still doesn't clear, the company is recorded as `not_found` with a
+  `blocked:` note in `Remarks` and the run continues.
+
+Escalation if Cloudflare keeps blocking:
+
+1. Always run `--show` (headed) and increase `delay_min_s`/`delay_max_s`.
+2. Add `pip install playwright-stealth` and apply it for stronger evasion.
+3. **Recommended alternative — use the official [Companies House API]**
+   (https://developer.company-information.service.gov.uk/). ltddir.com merely
+   aggregates UK registry data; the Companies House API is free, authoritative,
+   ToS-compliant, and returns every requested field as structured JSON with no
+   scraping or Cloudflare in the way. For a list of UK "LIMITED" companies this
+   is the more reliable path.
 
 ---
 

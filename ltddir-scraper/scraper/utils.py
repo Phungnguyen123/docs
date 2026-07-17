@@ -137,6 +137,77 @@ async def random_delay(min_s: float, max_s: float) -> None:
     await asyncio.sleep(random.uniform(min_s, max_s))
 
 
+async def wait_for_challenge_clear(page, *, timeout_s: float = 40.0) -> bool:  # noqa: ANN001
+    """Poll until an anti-bot challenge clears, or ``timeout_s`` elapses.
+
+    A real (headed) browser often auto-solves Cloudflare's managed challenge
+    within a few seconds; this waits for that to happen. Returns True if the
+    page is no longer a challenge, False if it still looks blocked.
+    """
+    logger = get_logger()
+    deadline_steps = max(1, int(timeout_s / 2))
+    for step in range(deadline_steps):
+        try:
+            url = page.url
+            body = await page.evaluate(
+                "() => (document.body ? document.body.innerText : '')"
+            )
+        except Exception:  # noqa: BLE001 - transient during redirects
+            body = ""
+            url = ""
+        if url and not looks_like_challenge(url, None, body) and len(body) > 200:
+            if step:
+                logger.info("Challenge cleared after ~%ds", step * 2)
+            return True
+        await asyncio.sleep(2.0)
+    return False
+
+
+# --------------------------------------------------------------------------- #
+# Cloudflare / anti-bot handling
+# --------------------------------------------------------------------------- #
+# URL fragments Cloudflare adds while it runs a challenge.
+CLOUDFLARE_URL_MARKERS = ("__cf_chl", "cf_chl_rt_tk", "cf_chl_jschl")
+
+# Text that appears on interstitial / block pages.
+ANTIBOT_TEXT_SIGNALS = (
+    "just a moment",
+    "checking your browser",
+    "enable javascript and cookies",
+    "cloudflare",
+    "captcha",
+    "are you a robot",
+    "access denied",
+    "attention required",
+    "rate limit",
+    "too many requests",
+)
+
+# JS injected before page scripts run to reduce trivial automation fingerprints.
+STEALTH_INIT_SCRIPT = """
+Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+window.chrome = window.chrome || {runtime: {}};
+"""
+
+# Launch args that hide the "AutomationControlled" blink feature.
+STEALTH_LAUNCH_ARGS = (
+    "--disable-blink-features=AutomationControlled",
+    "--no-sandbox",
+)
+
+
+def looks_like_challenge(url: str, status: int | None, body_text: str) -> bool:
+    """Heuristically decide whether the current page is an anti-bot challenge."""
+    if any(m in url for m in CLOUDFLARE_URL_MARKERS):
+        return True
+    if status is not None and status in (403, 429, 503):
+        return True
+    low = (body_text or "").lower()
+    return any(sig in low for sig in ANTIBOT_TEXT_SIGNALS)
+
+
 class RetryError(RuntimeError):
     """Raised when all retry attempts are exhausted."""
 

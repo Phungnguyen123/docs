@@ -23,12 +23,16 @@ from playwright.async_api import (
 from .parser import CompanyRecord, parse_company_page
 from .search import Candidate, SearchClient
 from .utils import (
+    STEALTH_INIT_SCRIPT,
+    STEALTH_LAUNCH_ARGS,
     MatchResult,
     RetryError,
     choose_best_match,
     get_logger,
+    looks_like_challenge,
     random_delay,
     retry_async,
+    wait_for_challenge_clear,
 )
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
@@ -89,7 +93,10 @@ class Crawler:
 
     async def __aenter__(self) -> "Crawler":
         self._pw = await async_playwright().start()
-        launch_kwargs: dict[str, object] = {"headless": self._s.headless}
+        launch_kwargs: dict[str, object] = {
+            "headless": self._s.headless,
+            "args": list(STEALTH_LAUNCH_ARGS),
+        }
         if self._s.chromium_executable_path:
             launch_kwargs["executable_path"] = self._s.chromium_executable_path
         self._browser = await self._pw.chromium.launch(**launch_kwargs)
@@ -98,6 +105,7 @@ class Crawler:
             locale=self._s.locale,
             viewport={"width": self._s.viewport_width, "height": self._s.viewport_height},
         )
+        await self._context.add_init_script(STEALTH_INIT_SCRIPT)
         self._context.set_default_timeout(self._s.selector_timeout_ms)
         self._context.set_default_navigation_timeout(self._s.navigation_timeout_ms)
         return self
@@ -211,27 +219,26 @@ class Crawler:
             await page.close()
 
     async def _guard_anti_bot(self, page: "Page", *, before_navigation: bool) -> None:
-        """Detect common bot-block pages and raise :class:`AntiBotError`."""
+        """Detect anti-bot challenges; wait for auto-solve before giving up.
+
+        Raises :class:`AntiBotError` only if a challenge is still present after
+        the wait, so a headed browser gets a chance to clear Cloudflare.
+        """
         try:
             title = (await page.title()) or ""
             body = await page.evaluate(
-                "() => (document.body ? document.body.innerText : '').slice(0, 400)"
+                "() => (document.body ? document.body.innerText : '')"
             )
         except Exception:  # noqa: BLE001 - detection must never itself crash
             return
-        haystack = f"{title}\n{body}".lower()
-        signals = (
-            "just a moment",
-            "checking your browser",
-            "cloudflare",
-            "captcha",
-            "are you a robot",
-            "access denied",
-            "rate limit",
-            "too many requests",
+        if not looks_like_challenge(page.url, None, body):
+            return
+        self._log.warning("Anti-bot challenge on %s; waiting to clear...", page.url)
+        cleared = await wait_for_challenge_clear(
+            page, timeout_s=self._s.challenge_wait_s
         )
-        if any(sig in haystack for sig in signals):
-            raise AntiBotError(f"bot-block signal in page: {title!r}")
+        if not cleared:
+            raise AntiBotError(f"anti-bot challenge did not clear: {title!r}")
 
     async def polite_pause(self) -> None:
         """Sleep a random 1-3s between companies to be a good citizen."""

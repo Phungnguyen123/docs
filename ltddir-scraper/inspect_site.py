@@ -26,14 +26,11 @@ from playwright.async_api import async_playwright
 
 import config
 from scraper.parser import extract_label_value_pairs
-
-ANTIBOT_SIGNALS = (
-    "just a moment",
-    "checking your browser",
-    "cloudflare",
-    "captcha",
-    "are you a robot",
-    "access denied",
+from scraper.utils import (
+    STEALTH_INIT_SCRIPT,
+    STEALTH_LAUNCH_ARGS,
+    looks_like_challenge,
+    wait_for_challenge_clear,
 )
 
 
@@ -43,11 +40,15 @@ async def inspect(query: str | None, show: bool) -> None:
     xhr_urls: list[str] = []
 
     async with async_playwright() as pw:
-        launch_kwargs: dict[str, object] = {"headless": not show}
+        launch_kwargs: dict[str, object] = {
+            "headless": not show,
+            "args": list(STEALTH_LAUNCH_ARGS),
+        }
         if s.chromium_executable_path:
             launch_kwargs["executable_path"] = s.chromium_executable_path
         browser = await pw.chromium.launch(**launch_kwargs)
         context = await browser.new_context(user_agent=s.user_agent, locale=s.locale)
+        await context.add_init_script(STEALTH_INIT_SCRIPT)
         page = await context.new_page()
 
         # Capture background API calls to reveal any hidden JSON endpoint.
@@ -60,12 +61,22 @@ async def inspect(query: str | None, show: bool) -> None:
 
         print(f"\n=== Navigating to {s.search_url} ===")
         resp = await page.goto(s.search_url, wait_until="domcontentloaded")
-        print(f"HTTP status: {resp.status if resp else 'unknown'}")
+        status = resp.status if resp else None
+        print(f"HTTP status: {status}")
         print(f"Final URL:   {page.url}")
 
-        body = (await page.evaluate("() => document.body.innerText")).lower()
-        blocks = [sig for sig in ANTIBOT_SIGNALS if sig in body]
-        print(f"Anti-bot signals: {blocks or 'none detected'}")
+        body = await page.evaluate("() => document.body.innerText")
+        if looks_like_challenge(page.url, status, body):
+            print("Anti-bot: CHALLENGE DETECTED (likely Cloudflare).")
+            if not show:
+                print("  -> Re-run with '--show' (headed) so the challenge can auto-solve.")
+            print("  -> Waiting up to 40s for it to clear...")
+            cleared = await wait_for_challenge_clear(page, timeout_s=40.0)
+            print(f"  -> Challenge cleared: {cleared}")
+            print(f"  -> Final URL now: {page.url}")
+            body = await page.evaluate("() => document.body.innerText")
+        else:
+            print("Anti-bot signals: none detected")
 
         print("\n--- Search box candidates that EXIST on the page ---")
         await _report_existing(page, s.search_input_selectors)
