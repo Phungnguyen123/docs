@@ -31,6 +31,7 @@ from scraper.hk_api import (
     record_to_company,
 )
 from scraper.domain_age import DomainAgeLookup, _today_utc, young_domain_flag
+from scraper.networks import build_networks_sheet
 from scraper.shop_scan import ShopScanner
 from scraper.utils import get_logger, setup_logging
 from scraper.web_enrich import (
@@ -205,7 +206,11 @@ def run_api_mode(args: argparse.Namespace) -> int:
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
     ordered = [rows_by_name[c] for c in companies if c in rows_by_name]
     annotate_batch_signals(ordered)
-    write_workbook(ordered, args.output, build_cluster_sheets(ordered))
+    sheets = build_cluster_sheets(ordered)
+    net = build_networks_sheet(ordered)
+    if net is not None:
+        sheets["Suspected Networks"] = net
+    write_workbook(ordered, args.output, sheets)
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
 
@@ -269,7 +274,11 @@ def run_csv_mode(args: argparse.Namespace) -> int:
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
     ordered = [rows_by_name[c] for c in companies if c in rows_by_name]
     annotate_batch_signals(ordered)
-    write_workbook(ordered, args.output, build_cluster_sheets(ordered))
+    sheets = build_cluster_sheets(ordered)
+    net = build_networks_sheet(ordered)
+    if net is not None:
+        sheets["Suspected Networks"] = net
+    write_workbook(ordered, args.output, sheets)
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
 

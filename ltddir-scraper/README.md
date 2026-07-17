@@ -137,6 +137,16 @@ A, B, C`). Nothing is a verdict — each flag is a lead to check by hand.
 **Incorporation Clusters** — grouping linked companies so a shell-company network
 is visible at a glance.
 
+**Suspected Networks tab (link analysis).** A **Suspected Networks** sheet runs a
+connected-components (union-find) analysis that links companies sharing a
+distinctive attribute — same registered address, same website/other domain, the
+same community/scam URL, or the same bulk incorporation date — and reports each
+resulting *ring*. Links are transitive: if A—B share a domain and B—C share an
+address, A/B/C surface as one network. Each row lists the members, a **Linked By**
+column explaining every connection (with the shared value), and the group's total
+risk-flag count, so an entire operation shows up as one line even when the
+individual companies use different addresses.
+
 ```bash
 # Configure ONE provider:
 export SERPAPI_KEY=...                        # SerpAPI, or
@@ -212,6 +222,7 @@ ltddir-scraper/
 │   ├── web_enrich.py         # OSINT signal collector + batch clusters
 │   ├── domain_age.py         # RDAP domain-registration-age lookup
 │   ├── shop_scan.py          # scam-shop page scorer
+│   ├── networks.py           # union-find link analysis (Suspected Networks)
 │   └── exporter.py           # Excel I/O + resumable progress store (shared)
 ├── input/hk/                 # put the Hong Kong data.gov.hk dataset file(s) here
 ├── tests/                    # offline unit tests (no network needed)
