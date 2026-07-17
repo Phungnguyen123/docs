@@ -7,7 +7,7 @@ workbook. Multiple interchangeable data sources, **same input and output format*
 | Entry point | Source | Region | When to use |
 | --- | --- | --- | --- |
 | **`main_ch.py`** ✅ | Official **Companies House API** | 🇬🇧 UK | Reliable, free, legal, structured. Full fields incl. directors. |
-| **`main_hk.py`** | Free **data.gov.hk** open dataset | 🇭🇰 Hong Kong | Free, no key. Number + address + live status (no directors). |
+| **`main_hk.py`** | Free **data.gov.hk** open API | 🇭🇰 Hong Kong | Free, no key. Number + type + incorporation date + address (no directors). |
 | `main.py` | Scrapes **ltddir.com** via Playwright | 🇬🇧 UK | Only if you specifically need ltddir's data (Cloudflare-blocked). |
 
 > **Why two?** `ltddir.com` is a Cloudflare-protected *aggregator* — it re-packages
@@ -80,10 +80,12 @@ python main_hk.py --dataset input/hk --show-columns   # verify detected columns
 python main_hk.py --dataset input/hk                  # match locally
 ```
 
-**What you get (either mode):** Company Number (BRN), Registered Address,
-Company Status (Live), match confidence — output to the same `result.xlsx`.
-**What you do NOT get** (needs paid ICRIS): directors, company secretary,
-incorporation date.
+**What you get (API mode):** Company Number (BRN), English name, **Company Type**,
+**Incorporation Date**, Registered Address, Company Status (Live), match
+confidence — output to the same `result.xlsx`. (Confirmed against the live API,
+whose fields are `Brn`, `English_Company_Name`, `Company_Type`,
+`Date_of_Incorporation`, `Address_of_Registered_Office`.)
+**What you do NOT get** (needs paid ICRIS): directors and company secretary.
 
 ---
 

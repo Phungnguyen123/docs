@@ -21,6 +21,7 @@ status. NOT directors/secretary/incorporation date (those need paid ICRIS).
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -36,11 +37,17 @@ DATASET_URL = "https://data.gov.hk/en-data/dataset/hk-cr-crdata-list-addr"
 _LEGAL_SUFFIXES = ("limited", "ltd", "ltd.", "company", "co", "co.")
 
 # Keyword hints for tolerant field extraction from a result record.
+# (Confirmed against real API fields: Brn, English_Company_Name,
+#  Address_of_Registered_Office, Company_Type, Date_of_Incorporation.)
 _NUMBER_HINTS = ("brn", "cr_no", "crno", "cr no", "company_number", "reg_no", "number")
-_NAME_EN_HINTS = ("name_eng", "name_en", "eng_name", "comp_name_eng", "english")
+_NAME_EN_HINTS = ("english", "name_eng", "name_en", "eng_name", "comp_name_eng")
 _NAME_ANY_HINTS = ("comp_name", "company_name", "name")
 _CHINESE_HINTS = ("chi", "chinese", "_tc", "_sc", "中文")
 _ADDRESS_HINTS = ("addr", "address")
+_TYPE_HINTS = ("company_type", "comp_type", "type")
+_INCORP_HINTS = ("date_of_incorporation", "incorporation", "incorp")
+# Values that mean "empty" in this API (it returns the literal string "NULL").
+_NULL_TOKENS = {"", "null", "none", "n/a", "nil"}
 
 
 class HKApiError(RuntimeError):
@@ -137,14 +144,30 @@ def extract_records(data: Any) -> list[dict[str, Any]]:
     return []
 
 
+def clean_value(value: Any) -> str:
+    """Trim a value and treat the API's literal 'NULL' etc. as empty."""
+    s = "" if value is None else str(value).strip()
+    return "" if s.lower() in _NULL_TOKENS else s
+
+
+def normalize_date(value: str) -> str:
+    """Convert a DD-MM-YYYY date (as the API returns) to ISO YYYY-MM-DD."""
+    m = re.match(r"^(\d{2})-(\d{2})-(\d{4})$", value.strip())
+    if m:
+        day, month, year = m.groups()
+        return f"{year}-{month}-{day}"
+    return value.strip()
+
+
 def _find_field(record: dict[str, Any], hints: tuple[str, ...], *, exclude: tuple[str, ...] = ()) -> str:
     """Return the value of the first key whose name matches a hint."""
     for k, v in record.items():
         low = str(k).lower()
         if any(x in low for x in exclude):
             continue
-        if any(h in low for h in hints) and str(v).strip():
-            return str(v).strip()
+        cleaned = clean_value(v)
+        if any(h in low for h in hints) and cleaned:
+            return cleaned
     return ""
 
 
@@ -159,16 +182,18 @@ def record_english_name(record: dict[str, Any]) -> str:
 def record_to_company(record: dict[str, Any]) -> CompanyRecord:
     """Map an API record dict into a :class:`CompanyRecord` (tolerant)."""
     address = ", ".join(
-        str(v).strip()
+        clean_value(v)
         for k, v in record.items()
-        if any(h in str(k).lower() for h in _ADDRESS_HINTS) and str(v).strip()
+        if any(h in str(k).lower() for h in _ADDRESS_HINTS) and clean_value(v)
     )
     return CompanyRecord(
         company_name=record_english_name(record),
         company_number=_find_field(record, _NUMBER_HINTS),
         company_status="Live",
+        company_type=_find_field(record, _TYPE_HINTS),
+        incorporation_date=normalize_date(_find_field(record, _INCORP_HINTS)),
         registered_address=address,
-        remarks="from data.gov.hk CR API (no directors/incorporation date)",
+        remarks="from data.gov.hk CR API (no directors/secretary)",
         source_url=DATASET_URL,
     )
 

@@ -69,8 +69,14 @@ def _to_row(name: str, match, record) -> dict[str, str]:  # noqa: ANN001
         row.update(
             {
                 "Company Number": record.company_number,
+                "Company Type": record.company_type,
                 "Company Status": record.company_status,
+                "Incorporation Date": record.incorporation_date,
                 "Registered Address": record.registered_address,
+                "Directors": record.directors,
+                "Company Secretary": record.company_secretary,
+                "Business Nature": record.business_nature,
+                "Previous Names": record.previous_names,
                 "Remarks": record.remarks,
                 "Source URL": record.source_url,
             }

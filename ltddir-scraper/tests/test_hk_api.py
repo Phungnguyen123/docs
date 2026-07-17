@@ -8,12 +8,52 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scraper.hk_api import (
+    clean_value,
     extract_records,
     match_records,
+    normalize_date,
     record_english_name,
     record_to_company,
     strip_legal_suffix,
 )
+
+# The exact record shape returned by the live data.cr.gov.hk API.
+REAL_RECORD = {
+    "Brn": "16391613",
+    "Chinese_Company_Name": "NULL",
+    "English_Company_Name": "HELENA LIMITED",
+    "Address_of_Registered_Office": "FLAT A 4/F, FAIRVIEW MANSION, 84 ROBINSON RD, HONG KONG",
+    "Company_Type": "Private company limited by shares",
+    "Date_of_Incorporation": "21-01-1992",
+    "Re-domiciliation_Date": None,
+}
+
+
+def test_clean_value_treats_null_as_empty() -> None:
+    assert clean_value("NULL") == ""
+    assert clean_value(None) == ""
+    assert clean_value("  ") == ""
+    assert clean_value("HELENA LIMITED") == "HELENA LIMITED"
+
+
+def test_normalize_date_dd_mm_yyyy_to_iso() -> None:
+    assert normalize_date("21-01-1992") == "1992-01-21"
+    assert normalize_date("") == ""
+    assert normalize_date("2020-01-15") == "2020-01-15"  # already ISO -> unchanged
+
+
+def test_record_to_company_real_api_shape() -> None:
+    r = record_to_company(REAL_RECORD)
+    assert r.company_number == "16391613"
+    assert r.company_name == "HELENA LIMITED"
+    assert r.company_type == "Private company limited by shares"
+    assert r.incorporation_date == "1992-01-21"
+    assert "ROBINSON RD" in r.registered_address
+    assert r.company_status == "Live"
+
+
+def test_record_english_name_ignores_null_chinese() -> None:
+    assert record_english_name(REAL_RECORD) == "HELENA LIMITED"
 
 
 def test_strip_legal_suffix() -> None:
