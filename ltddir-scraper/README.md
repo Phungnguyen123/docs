@@ -45,30 +45,45 @@ No browser, no Cloudflare, resumable, same `result.xlsx` columns as below.
 
 Hong Kong's official registry (ICRIS) has **no free API** — directors and full
 particulars are pay-per-document (≈HK$22/company). But the Companies Registry
-publishes a **free** open dataset that covers every *live* local company:
-company number (CR No. / BRN), English/Chinese name, and registered office
-address — free for commercial re-use, updated daily.
+publishes the "Registered Office Address of Live Local Companies" data **free**
+on data.gov.hk, covering every *live* local company: company number (BRN),
+English/Chinese name, and registered office address.
+
+data.gov.hk now serves this as a searchable **open API** (no key), so there is
+nothing large to download. Two modes:
+
+### API mode (default, recommended)
 
 ```bash
-# 1. Download the dataset (one file, CSV or XLSX) from:
-#    https://data.gov.hk/en-data/dataset/hk-cr-crdata-list-addr
-#    -> resource "Registered Office Address of Live Local Companies"
-#    Save it into  input/hk/
+# 1. Confirm the live API's JSON shape once (dumps raw response):
+python main_hk.py --probe "HELENA LIMITED"
 
-# 2. Verify the columns were auto-detected correctly:
-python main_hk.py --show-columns
-
-# 3. Put your HK company names in input/companies.xlsx, then match:
+# 2. Put your HK company names in input/companies.xlsx, then:
 python main_hk.py --limit 5
 python main_hk.py
 ```
 
-**What you get:** Company Number, Registered Address, Company Status (Live),
-match confidence — output to the same `result.xlsx`.
+The client queries `data.cr.gov.hk` per name (exact-prefix, then again without
+the legal suffix to catch LTD/LIMITED variants) and picks the best match. Fields
+are extracted **tolerantly** by keyword, so slight JSON naming differences don't
+break it — run `--probe` first and, if a field looks unmapped, tell me the raw
+keys and I'll tune `scraper/hk_api.py`.
+
+### CSV mode (if you prefer a downloaded file)
+
+If you do download a CSV/XLSX from the
+[dataset page](https://data.gov.hk/en-data/dataset/hk-cr-crdata-list-addr) into
+`input/hk/`:
+
+```bash
+python main_hk.py --dataset input/hk --show-columns   # verify detected columns
+python main_hk.py --dataset input/hk                  # match locally
+```
+
+**What you get (either mode):** Company Number (BRN), Registered Address,
+Company Status (Live), match confidence — output to the same `result.xlsx`.
 **What you do NOT get** (needs paid ICRIS): directors, company secretary,
-incorporation date. Columns are auto-detected by header keyword, so the tool
-keeps working if the registry renames a column (e.g. CR No. → BRN); use
-`--show-columns` to confirm and adjust `detect_columns()` if ever needed.
+incorporation date.
 
 ---
 
@@ -120,7 +135,8 @@ ltddir-scraper/
 │   ├── search.py             # ltddir search: perform search, collect candidates
 │   ├── crawler.py            # ltddir: browser lifecycle + per-company pipeline
 │   ├── companies_house.py    # Companies House API client + JSON mappers (UK)
-│   ├── hk_registry.py        # data.gov.hk dataset loader + matcher (Hong Kong)
+│   ├── hk_api.py             # data.cr.gov.hk live API client (Hong Kong, default)
+│   ├── hk_registry.py        # data.gov.hk CSV/XLSX loader + matcher (Hong Kong)
 │   └── exporter.py           # Excel I/O + resumable progress store (shared)
 ├── input/hk/                 # put the Hong Kong data.gov.hk dataset file(s) here
 ├── tests/                    # offline unit tests (no network needed)
