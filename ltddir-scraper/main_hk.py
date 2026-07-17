@@ -30,7 +30,7 @@ from scraper.hk_api import (
     record_to_company,
 )
 from scraper.utils import get_logger, setup_logging
-from scraper.web_enrich import WebEnricher, extract_presence
+from scraper.web_enrich import WebEnricher, annotate_batch_signals, extract_signals
 
 DEFAULT_DATASET = config.BASE_DIR / "input" / "hk"
 HK_OUTPUT, HK_PROGRESS = config.tool_paths("hk")
@@ -48,8 +48,9 @@ def parse_args() -> argparse.Namespace:
         help="use CSV mode: path to a downloaded data.gov.hk file/folder",
     )
     p.add_argument("--probe", type=str, default=None, help="dump raw API JSON for one name and exit")
-    p.add_argument("--probe-web", type=str, default=None, help="dump raw web-search results for one name and exit")
-    p.add_argument("--enrich-web", action="store_true", help="add best-effort Website/Social columns (needs a search API key)")
+    p.add_argument("--probe-web", type=str, default=None, help="dump raw web-search results + signals for one name and exit")
+    p.add_argument("--enrich-web", action="store_true", help="add web/OSINT signal columns (needs a search API key)")
+    p.add_argument("--deep", action="store_true", help="with --enrich-web: run an extra scam/complaint query per company")
     p.add_argument("--limit", type=int, default=0, help="process at most N companies")
     p.add_argument("--fresh", action="store_true", help="ignore prior progress")
     p.add_argument("--show-columns", action="store_true", help="(CSV mode) print detected columns")
@@ -57,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def _to_row(name: str, match, record, presence=None) -> dict[str, str]:  # noqa: ANN001
+def _to_row(name: str, match, record, signals=None) -> dict[str, str]:  # noqa: ANN001
     """Serialise a lookup outcome into the canonical output row."""
     row = {c: "" for c in COLUMNS}
     row.update(
@@ -87,9 +88,14 @@ def _to_row(name: str, match, record, presence=None) -> dict[str, str]:  # noqa:
                 "Re-domiciliation Date": record.redomiciliation_date,
             }
         )
-    if presence is not None:
-        row["Website"] = presence.website
-        row["Social Media"] = presence.social()
+    if signals is not None:
+        row["Website"] = signals.website
+        row["Website Matches Name"] = signals.match_label()
+        row["Other Domains"] = signals.other_domains_cell()
+        row["Social Media"] = signals.socials_cell()
+        row["Community Mentions"] = signals.community_cell()
+        row["Scam/Blacklist Mentions"] = signals.scam_cell()
+        row["Risk Signals"] = signals.risk_cell()
     return row
 
 
@@ -108,13 +114,13 @@ def _make_enricher(args: argparse.Namespace, log) -> WebEnricher | None:  # noqa
     return enricher
 
 
-def _enrich(enricher: WebEnricher | None, name: str, match, region_hint: str):  # noqa: ANN001
-    """Return a WebPresence for a matched company, or None."""
+def _enrich(enricher: WebEnricher | None, args, name: str, match, region_hint: str):  # noqa: ANN001
+    """Return WebSignals for a matched company, or None."""
     if enricher is None or match.status == "not_found":
         return None
-    presence = enricher.find_presence(match.matched_name or name, region_hint=region_hint)
+    signals = enricher.gather(match.matched_name or name, region_hint=region_hint, deep=args.deep)
     time.sleep(0.3)  # pace the search API too
-    return presence
+    return signals
 
 
 def run_api_mode(args: argparse.Namespace) -> int:
@@ -152,13 +158,14 @@ def run_api_mode(args: argparse.Namespace) -> int:
             row["Remarks"] = f"error: {exc}"
             progress.append(row)
             continue
-        presence = _enrich(enricher, name, match, region_hint="Hong Kong")
+        presence = _enrich(enricher, args, name, match, region_hint="Hong Kong")
         log.info("[%d/%d] %s -> %s (%.3f)", i, len(todo), name, match.status, match.confidence)
         progress.append(_to_row(name, match, record, presence))
         time.sleep(0.5)  # polite pacing
 
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
     ordered = [rows_by_name[c] for c in companies if c in rows_by_name]
+    annotate_batch_signals(ordered)
     write_excel(ordered, args.output)
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
@@ -216,12 +223,13 @@ def run_csv_mode(args: argparse.Namespace) -> int:
             name, min_confidence=s.min_confidence, strong_confidence=s.strong_confidence
         )
         record = index.row_to_record(row_data) if row_data else None
-        presence = _enrich(enricher, name, match, region_hint="Hong Kong")
+        presence = _enrich(enricher, args, name, match, region_hint="Hong Kong")
         log.info("[%d/%d] %s -> %s (%.3f)", i, len(todo), name, match.status, match.confidence)
         progress.append(_to_row(name, match, record, presence))
 
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
     ordered = [rows_by_name[c] for c in companies if c in rows_by_name]
+    annotate_batch_signals(ordered)
     write_excel(ordered, args.output)
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
@@ -251,12 +259,17 @@ def main() -> int:
             )
             return 2
         print(f"Provider: {enricher.provider()}")
-        results = enricher.raw_results(f'"{args.probe_web}"')
+        results = enricher.raw_results(f'"{args.probe_web}" Hong Kong')
         print(json.dumps(results, indent=2, ensure_ascii=False)[:6000])
-        presence = extract_presence(results, args.probe_web)
-        print("\nExtracted -> website:", presence.website or "(none)")
-        print("            linkedin:", presence.linkedin or "(none)")
-        print("            facebook:", presence.facebook or "(none)")
+        sig = extract_signals(results, args.probe_web)
+        print("\nExtracted signals:")
+        print("  website:            ", sig.website or "(none)")
+        print("  matches name:       ", sig.match_label() or "(n/a)")
+        print("  other domains:      ", sig.other_domains_cell() or "(none)")
+        print("  social media:       ", sig.socials_cell() or "(none)")
+        print("  community mentions: ", sig.community_cell() or "(none)")
+        print("  scam/blacklist:     ", sig.scam_cell() or "(none)")
+        print("  RISK SIGNALS:       ", sig.risk_cell() or "(none)")
         return 0
 
     # CSV mode when a dataset path is given or --show-columns is requested.

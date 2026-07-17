@@ -36,9 +36,14 @@ COLUMNS: list[str] = [
     # Optional extras (blank unless the source provides them, e.g. Hong Kong).
     "Company Name (Chinese)",
     "Re-domiciliation Date",
-    # Best-effort web enrichment (blank unless --enrich-web is used).
+    # Investigation / OSINT signals (batch flags always; web columns need --enrich-web).
     "Website",
+    "Website Matches Name",
+    "Other Domains",
     "Social Media",
+    "Community Mentions",
+    "Scam/Blacklist Mentions",
+    "Risk Signals",
 ]
 
 

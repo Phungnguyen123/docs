@@ -93,23 +93,43 @@ whose fields are `Brn`, `English_Company_Name`, `Company_Type`,
 `Date_of_Incorporation`, `Address_of_Registered_Office`.)
 **What you do NOT get** (needs paid ICRIS): directors and company secretary.
 
-### Optional: best-effort Website / Social Media (`--enrich-web`)
+### Anomaly / OSINT signals — for investigating suspicious companies
 
-Company websites and social pages are **not** in any registry (HK or UK), so this
-is an *unofficial* web-search step — treat results as candidates to verify.
+Built for spotting suspicious behaviour of newly registered companies (scam
+storefronts, shell-company factories, impersonation). It **surfaces and flags**
+signals rather than hiding them — e.g. a company registered under one name but
+operating a store on an unrelated domain is a red flag the tool keeps and marks.
+
+**Batch signals (always on, no API key, from registry data)** land in the
+**Risk Signals** column:
+
+- `shared registered address (N companies)` — many of your companies at one
+  address = shell-factory tell
+- `bulk incorporation date (N on <date>)` — mass same-day registration
+- `random-looking name` — machine-generated brand names (VRAXIONYX, QYLARIS…)
+
+**Web signals (opt-in `--enrich-web`, needs a search API key)** add columns
+**Website, Website Matches Name, Other Domains, Social Media, Community Mentions,
+Scam/Blacklist Mentions**, and more Risk Signals:
+
+- `website domain does not match company name` (kept + flagged, not dropped)
+- `multiple distinct domains (N)`
+- `shopping / e-commerce keywords in results`
+- `scam / blacklist / complaint mention` (ScamAdviser / Trustpilot / RipoffReport)
+- Community mentions from Reddit / Quora / forums for brand-mention tracing
 
 ```bash
-# Configure ONE search provider:
-export SERPAPI_KEY=...                       # SerpAPI, or
-export GOOGLE_API_KEY=...  GOOGLE_CSE_ID=...  # Google Programmable Search (CSE)
+# Configure ONE provider:
+export SERPAPI_KEY=...                        # SerpAPI, or
+export GOOGLE_API_KEY=...  GOOGLE_CSE_ID=...   # Google Programmable Search (CSE)
 
-python main_hk.py --probe-web "HELENA LIMITED"          # see raw results + picks
-python main_hk.py --input input/hongkong.xlsx --enrich-web
+python main_hk.py --probe-web "HELENA LIMITED"                  # inspect one company's signals
+python main_hk.py --input input/hongkong.xlsx --enrich-web      # 1 search/company
+python main_hk.py --input input/hongkong.xlsx --enrich-web --deep  # + a scam/complaint query each
 ```
 
-Fills two extra columns, **Website** and **Social Media** (LinkedIn/Facebook),
-by picking a non-directory domain that matches the company name. Name collisions
-and companies with no site are common, so verify before relying on it.
+Everything web-derived is **best-effort OSINT, not proof** — each Risk Signal is
+a lead to review by hand, not a verdict. `--deep` doubles API calls per company.
 
 > **Cannot be obtained at all:** *UBO / beneficial-owner nationality* — Hong
 > Kong's Significant Controllers Register is private by law (inspectable only by
