@@ -93,6 +93,30 @@ whose fields are `Brn`, `English_Company_Name`, `Company_Type`,
 `Date_of_Incorporation`, `Address_of_Registered_Office`.)
 **What you do NOT get** (needs paid ICRIS): directors and company secretary.
 
+### Optional: best-effort Website / Social Media (`--enrich-web`)
+
+Company websites and social pages are **not** in any registry (HK or UK), so this
+is an *unofficial* web-search step — treat results as candidates to verify.
+
+```bash
+# Configure ONE search provider:
+export SERPAPI_KEY=...                       # SerpAPI, or
+export GOOGLE_API_KEY=...  GOOGLE_CSE_ID=...  # Google Programmable Search (CSE)
+
+python main_hk.py --probe-web "HELENA LIMITED"          # see raw results + picks
+python main_hk.py --input input/hongkong.xlsx --enrich-web
+```
+
+Fills two extra columns, **Website** and **Social Media** (LinkedIn/Facebook),
+by picking a non-directory domain that matches the company name. Name collisions
+and companies with no site are common, so verify before relying on it.
+
+> **Cannot be obtained at all:** *UBO / beneficial-owner nationality* — Hong
+> Kong's Significant Controllers Register is private by law (inspectable only by
+> authorities), so it is unavailable even for a fee. *Applicant/presentor contact*
+> and *nature of business* are not in CR open data (paid document / filed with the
+> tax office respectively).
+
 ---
 
 ## About the sources
@@ -145,6 +169,7 @@ ltddir-scraper/
 │   ├── companies_house.py    # Companies House API client + JSON mappers (UK)
 │   ├── hk_api.py             # data.cr.gov.hk live API client (Hong Kong, default)
 │   ├── hk_registry.py        # data.gov.hk CSV/XLSX loader + matcher (Hong Kong)
+│   ├── web_enrich.py         # optional best-effort website/social lookup
 │   └── exporter.py           # Excel I/O + resumable progress store (shared)
 ├── input/hk/                 # put the Hong Kong data.gov.hk dataset file(s) here
 ├── tests/                    # offline unit tests (no network needed)

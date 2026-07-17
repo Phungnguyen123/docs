@@ -30,6 +30,7 @@ from scraper.hk_api import (
     record_to_company,
 )
 from scraper.utils import get_logger, setup_logging
+from scraper.web_enrich import WebEnricher, extract_presence
 
 DEFAULT_DATASET = config.BASE_DIR / "input" / "hk"
 HK_OUTPUT, HK_PROGRESS = config.tool_paths("hk")
@@ -47,6 +48,8 @@ def parse_args() -> argparse.Namespace:
         help="use CSV mode: path to a downloaded data.gov.hk file/folder",
     )
     p.add_argument("--probe", type=str, default=None, help="dump raw API JSON for one name and exit")
+    p.add_argument("--probe-web", type=str, default=None, help="dump raw web-search results for one name and exit")
+    p.add_argument("--enrich-web", action="store_true", help="add best-effort Website/Social columns (needs a search API key)")
     p.add_argument("--limit", type=int, default=0, help="process at most N companies")
     p.add_argument("--fresh", action="store_true", help="ignore prior progress")
     p.add_argument("--show-columns", action="store_true", help="(CSV mode) print detected columns")
@@ -54,7 +57,7 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def _to_row(name: str, match, record) -> dict[str, str]:  # noqa: ANN001
+def _to_row(name: str, match, record, presence=None) -> dict[str, str]:  # noqa: ANN001
     """Serialise a lookup outcome into the canonical output row."""
     row = {c: "" for c in COLUMNS}
     row.update(
@@ -84,13 +87,41 @@ def _to_row(name: str, match, record) -> dict[str, str]:  # noqa: ANN001
                 "Re-domiciliation Date": record.redomiciliation_date,
             }
         )
+    if presence is not None:
+        row["Website"] = presence.website
+        row["Social Media"] = presence.social()
     return row
+
+
+def _make_enricher(args: argparse.Namespace, log) -> WebEnricher | None:  # noqa: ANN001
+    """Build a WebEnricher if --enrich-web is set and a provider is configured."""
+    if not args.enrich_web:
+        return None
+    enricher = WebEnricher()
+    if not enricher.enabled():
+        log.warning(
+            "--enrich-web set but no search API key found; "
+            "set SERPAPI_KEY or GOOGLE_API_KEY + GOOGLE_CSE_ID. Skipping enrichment."
+        )
+        return None
+    log.info("Web enrichment enabled via %s", enricher.provider())
+    return enricher
+
+
+def _enrich(enricher: WebEnricher | None, name: str, match, region_hint: str):  # noqa: ANN001
+    """Return a WebPresence for a matched company, or None."""
+    if enricher is None or match.status == "not_found":
+        return None
+    presence = enricher.find_presence(match.matched_name or name, region_hint=region_hint)
+    time.sleep(0.3)  # pace the search API too
+    return presence
 
 
 def run_api_mode(args: argparse.Namespace) -> int:
     """Look up each company via the live CR API. Resumable."""
     log = get_logger()
     client = HKCrApiClient()
+    enricher = _make_enricher(args, log)
 
     companies = read_input_companies(args.input)
     if args.limit > 0:
@@ -121,8 +152,9 @@ def run_api_mode(args: argparse.Namespace) -> int:
             row["Remarks"] = f"error: {exc}"
             progress.append(row)
             continue
+        presence = _enrich(enricher, name, match, region_hint="Hong Kong")
         log.info("[%d/%d] %s -> %s (%.3f)", i, len(todo), name, match.status, match.confidence)
-        progress.append(_to_row(name, match, record))
+        progress.append(_to_row(name, match, record, presence))
         time.sleep(0.5)  # polite pacing
 
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
@@ -165,6 +197,7 @@ def run_csv_mode(args: argparse.Namespace) -> int:
         return 2
 
     index = HKRegistryIndex(df, cols)
+    enricher = _make_enricher(args, log)
     companies = read_input_companies(args.input)
     if args.limit > 0:
         companies = companies[: args.limit]
@@ -183,8 +216,9 @@ def run_csv_mode(args: argparse.Namespace) -> int:
             name, min_confidence=s.min_confidence, strong_confidence=s.strong_confidence
         )
         record = index.row_to_record(row_data) if row_data else None
+        presence = _enrich(enricher, name, match, region_hint="Hong Kong")
         log.info("[%d/%d] %s -> %s (%.3f)", i, len(todo), name, match.status, match.confidence)
-        progress.append(_to_row(name, match, record))
+        progress.append(_to_row(name, match, record, presence))
 
     rows_by_name = {r["Input Company Name"]: r for r in progress.load_rows()}
     ordered = [rows_by_name[c] for c in companies if c in rows_by_name]
@@ -206,6 +240,23 @@ def main() -> int:
             print(f"API error: {exc}")
             return 2
         print(json.dumps(data, indent=2, ensure_ascii=False)[:6000])
+        return 0
+
+    if args.probe_web is not None:
+        enricher = WebEnricher()
+        if not enricher.enabled():
+            print(
+                "No search API key found. Set SERPAPI_KEY, or "
+                "GOOGLE_API_KEY + GOOGLE_CSE_ID."
+            )
+            return 2
+        print(f"Provider: {enricher.provider()}")
+        results = enricher.raw_results(f'"{args.probe_web}"')
+        print(json.dumps(results, indent=2, ensure_ascii=False)[:6000])
+        presence = extract_presence(results, args.probe_web)
+        print("\nExtracted -> website:", presence.website or "(none)")
+        print("            linkedin:", presence.linkedin or "(none)")
+        print("            facebook:", presence.facebook or "(none)")
         return 0
 
     # CSV mode when a dataset path is given or --show-columns is requested.
