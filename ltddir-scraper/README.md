@@ -147,6 +147,18 @@ column explaining every connection (with the shared value), and the group's tota
 risk-flag count, so an entire operation shows up as one line even when the
 individual companies use different addresses.
 
+**OSINT trace tabs (`--osint-trace`).** To trace an organised operation across the
+open web, this **pivots on shared infrastructure** rather than searching 100 names
+one by one: it runs platform-targeted queries for each shared registered address
+and each distinctive storefront domain across **Reddit, Telegram, Quora, forums
+(BlackHatWorld/HackForums/city-data/…), Discord, and scam-report sites
+(ScamAdviser/Trustpilot/RipoffReport)**. Results land in an **OSINT Trace** sheet
+(platform, pivot, title, URL) with an **OSINT Summary** sheet counting mentions
+per platform and per pivot — so a shell-address or store discussed across scam
+forums becomes visible. Bounded (marketplaces/directories excluded from pivots;
+domains capped) and logged, so API usage stays predictable (~1 query per shared
+address + 1 per domain).
+
 ```bash
 # Configure ONE provider:
 export SERPAPI_KEY=...                        # SerpAPI, or
@@ -223,6 +235,7 @@ ltddir-scraper/
 │   ├── domain_age.py         # RDAP domain-registration-age lookup
 │   ├── shop_scan.py          # scam-shop page scorer
 │   ├── networks.py           # union-find link analysis (Suspected Networks)
+│   ├── osint_trace.py        # forum/Reddit/Telegram/scam-report pivot sweep
 │   └── exporter.py           # Excel I/O + resumable progress store (shared)
 ├── input/hk/                 # put the Hong Kong data.gov.hk dataset file(s) here
 ├── tests/                    # offline unit tests (no network needed)

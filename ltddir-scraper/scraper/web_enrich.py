@@ -40,11 +40,15 @@ from .utils import get_logger, normalize_name
 # --------------------------------------------------------------------------- #
 _SOCIAL_DOMAINS = (
     "linkedin.com", "facebook.com", "instagram.com", "twitter.com", "x.com",
-    "tiktok.com", "youtube.com", "t.me", "wa.me", "whatsapp.com", "pinterest.com",
+    "tiktok.com", "youtube.com", "wa.me", "whatsapp.com", "pinterest.com",
 )
+# Community / forum / messaging platforms used for brand-mention tracing.
 _COMMUNITY_DOMAINS = (
     "reddit.com", "quora.com", "medium.com", "stackexchange.com",
     "tripadvisor.com", "blogspot.com", "wordpress.com",
+    "t.me", "telegram.me", "telegram.org", "discord.gg", "discord.com",
+    "city-data.com", "4chan.org", "blackhatworld.com", "hackforums.net",
+    "warriorforum.com", "trustpilot.com.reviews",
 )
 _SCAM_DOMAINS = (
     "scamadviser.com", "trustpilot.com", "ripoffreport.com", "scamdoc.com",

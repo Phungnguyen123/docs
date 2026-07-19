@@ -32,6 +32,7 @@ from scraper.hk_api import (
 )
 from scraper.domain_age import DomainAgeLookup, _today_utc, young_domain_flag
 from scraper.networks import build_networks_sheet
+from scraper.osint_trace import OsintTracer, build_osint_sheets
 from scraper.shop_scan import ShopScanner
 from scraper.utils import get_logger, setup_logging
 from scraper.web_enrich import (
@@ -63,6 +64,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--deep", action="store_true", help="with --enrich-web: run an extra scam/complaint query per company")
     p.add_argument("--whois", action="store_true", help="with --enrich-web: look up domain registration age (RDAP, free)")
     p.add_argument("--scan-shop", action="store_true", help="with --enrich-web: fetch + score the website for scam-shop signals")
+    p.add_argument("--osint-trace", action="store_true", help="sweep forums/Reddit/Telegram/scam-reports for the shared address + discovered domains (needs a search API key)")
     p.add_argument("--limit", type=int, default=0, help="process at most N companies")
     p.add_argument("--fresh", action="store_true", help="ignore prior progress")
     p.add_argument("--show-columns", action="store_true", help="(CSV mode) print detected columns")
@@ -164,6 +166,19 @@ def _enrich(tools: _Tools, args, name: str, match, region_hint: str):  # noqa: A
     return signals
 
 
+def _maybe_osint(args, ordered, tools, log):  # noqa: ANN001
+    """Run the OSINT community/forum trace if requested; return extra sheets."""
+    if not args.osint_trace:
+        return {}
+    enricher = tools.enricher if tools.enricher is not None else WebEnricher()
+    if not enricher.enabled():
+        log.warning("--osint-trace needs a search API key (SERPAPI_KEY or GOOGLE_*); skipping.")
+        return {}
+    log.info("Running OSINT trace via %s ...", enricher.provider())
+    mentions = OsintTracer(enricher).trace(ordered)
+    return build_osint_sheets(mentions)
+
+
 def run_api_mode(args: argparse.Namespace) -> int:
     """Look up each company via the live CR API. Resumable."""
     log = get_logger()
@@ -211,6 +226,7 @@ def run_api_mode(args: argparse.Namespace) -> int:
     net = build_networks_sheet(ordered)
     if net is not None:
         sheets["Suspected Networks"] = net
+    sheets.update(_maybe_osint(args, ordered, tools, log))
     write_workbook(ordered, args.output, sheets)
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
@@ -279,6 +295,7 @@ def run_csv_mode(args: argparse.Namespace) -> int:
     net = build_networks_sheet(ordered)
     if net is not None:
         sheets["Suspected Networks"] = net
+    sheets.update(_maybe_osint(args, ordered, tools, log))
     write_workbook(ordered, args.output, sheets)
     log.info("Done: %d/%d companies in output", len(ordered), len(companies))
     return 0
