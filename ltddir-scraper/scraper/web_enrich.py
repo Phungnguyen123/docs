@@ -65,8 +65,12 @@ _DIRECTORY_DOMAINS = (
 _MARKETPLACE_DOMAINS = (
     "etsy.com", "amazon.com", "amazon.co.uk", "aliexpress.com", "alibaba.com",
     "ebay.com", "temu.com", "dhgate.com", "shopee.com", "lazada.com",
-    "walmart.com", "wish.com", "made-in-china.com",
+    "walmart.com", "wish.com", "made-in-china.com", "mercari.com", "poshmark.com",
+    "jd.com", "taobao.com", "tmall.com", "1688.com",
 )
+# Marketplace brands with many country domains (ubuy.ec, ubuy.com.hk, ...): match
+# by brand label so every ccTLD variant is caught.
+_MARKETPLACE_BRANDS = ("ubuy", "joom", "banggood", "gearbest", "desertcart", "kaola")
 # Marketplace URL paths that are generic search/browse pages, not a seller/store.
 _MARKETPLACE_NOISE_PATHS = ("/market/", "/search", "/s?", "/sch/", "/b?", "/browse")
 # URL/snippet hints that a result is an actual storefront (Shopify-style).
@@ -115,7 +119,7 @@ def classify(url: str) -> str:
         return "scam"
     if _host_in(url, _COMMUNITY_DOMAINS) or "forum" in host:
         return "community"
-    if _host_in(url, _MARKETPLACE_DOMAINS):
+    if _host_in(url, _MARKETPLACE_DOMAINS) or any(b in host.split(".") for b in _MARKETPLACE_BRANDS):
         return "marketplace"
     if _host_in(url, _DIRECTORY_DOMAINS) or ".gov." in host or host.endswith(".gov"):
         return "directory"
