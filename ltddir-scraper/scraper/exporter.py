@@ -43,6 +43,7 @@ COLUMNS: list[str] = [
     "Shop Scam Scan",
     "Other Domains",
     "Social Media",
+    "Marketplace Listings",
     "Community Mentions",
     "Scam/Blacklist Mentions",
     "Risk Signals",

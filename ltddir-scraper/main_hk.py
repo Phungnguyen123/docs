@@ -107,6 +107,7 @@ def _to_row(name: str, match, record, signals=None) -> dict[str, str]:  # noqa: 
         row["Shop Scam Scan"] = signals.shop_scan
         row["Other Domains"] = signals.other_domains_cell()
         row["Social Media"] = signals.socials_cell()
+        row["Marketplace Listings"] = signals.marketplace_cell()
         row["Community Mentions"] = signals.community_cell()
         row["Scam/Blacklist Mentions"] = signals.scam_cell()
         row["Risk Signals"] = signals.risk_cell()

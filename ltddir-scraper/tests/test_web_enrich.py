@@ -72,14 +72,28 @@ def test_extract_signals_no_website_flag() -> None:
     assert "linkedin.com/company/x" in sig.socials_cell()
 
 
-def test_extract_signals_marketplace_not_treated_as_website() -> None:
-    # Etsy listing must NOT become the "website" (and must not be WHOIS'd).
+def test_extract_signals_marketplace_search_page_is_noise() -> None:
+    # A generic Etsy *market/search* page is noise: not a website, not a lead.
     results = [
         {"link": "https://www.etsy.com/de/market/foo", "title": "", "snippet": ""},
     ]
     sig = extract_signals(results, "VELOURA LIMITED")
     assert sig.website == ""
+    assert sig.marketplace_cell() == ""
     assert "no company website found in search" in sig.risk_cell()
+
+
+def test_extract_signals_marketplace_seller_page_is_a_lead() -> None:
+    # A real Etsy *shop* page is kept as an investigative lead (own column),
+    # not the company's website and never WHOIS'd.
+    results = [
+        {"link": "https://www.etsy.com/shop/VelouraStore", "title": "Veloura shop", "snippet": ""},
+    ]
+    sig = extract_signals(results, "VELOURA LIMITED")
+    assert sig.website == ""  # marketplace is never the "website"
+    assert "etsy.com/shop/VelouraStore" in sig.marketplace_cell()
+    assert "sells on marketplace (verify seller)" in sig.risk_cell()
+    assert "etsy.com/shop/VelouraStore" in sig.evidence_cell()
 
 
 def test_extract_signals_name_matching_store_is_ok() -> None:

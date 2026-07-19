@@ -58,13 +58,17 @@ _DIRECTORY_DOMAINS = (
     "companieshouse.hk", "webb-site.com", "importyeti.com", "panjiva.com",
     "signalhire.com", "rocketreach.co", "apollo.io", "hongkongcompanylookup.com",
 )
-# Marketplaces / big platforms: a *listing* here is not the company's own site,
-# and running WHOIS on them returns the platform's age (misleading).
+# Marketplaces / big platforms: a *listing* here is NOT the company's own site,
+# and WHOIS on them returns the platform's age (misleading) — so they never
+# become the picked "Website". But a genuine seller page IS an investigative
+# lead, so marketplace hits are kept in their own "Marketplace Listings" column.
 _MARKETPLACE_DOMAINS = (
     "etsy.com", "amazon.com", "amazon.co.uk", "aliexpress.com", "alibaba.com",
     "ebay.com", "temu.com", "dhgate.com", "shopee.com", "lazada.com",
-    "walmart.com", "wish.com", "made-in-china.com", "yaman.com", "trustpilot.com",
+    "walmart.com", "wish.com", "made-in-china.com",
 )
+# Marketplace URL paths that are generic search/browse pages, not a seller/store.
+_MARKETPLACE_NOISE_PATHS = ("/market/", "/search", "/s?", "/sch/", "/b?", "/browse")
 # URL/snippet hints that a result is an actual storefront (Shopify-style).
 _COMMERCIAL_PATH_HINTS = ("/product", "/products", "/collections", "/cart", "/shop", "/pages/", "/checkout")
 _COMMERCIAL_TLDS = (".shop", ".store")
@@ -195,6 +199,7 @@ class WebSignals:
     socials: list[str] = field(default_factory=list)
     community: list[str] = field(default_factory=list)
     scam_mentions: list[str] = field(default_factory=list)
+    marketplace: list[str] = field(default_factory=list)  # seller pages on Etsy/Amazon/...
     domain_registered: str = ""  # ISO date of the website domain's registration
     shop_scan: str = ""  # summary of scam-shop indicators (see shop_scan.py)
     # Each flag is (label, evidence) — evidence is a URL/detail to verify by hand.
@@ -224,6 +229,9 @@ class WebSignals:
 
     def scam_cell(self) -> str:
         return self._join(self.scam_mentions)
+
+    def marketplace_cell(self) -> str:
+        return self._join(self.marketplace)
 
     def risk_cell(self) -> str:
         return "; ".join(dict.fromkeys(label for label, _ in self.flags))
@@ -259,7 +267,9 @@ def extract_signals(results: list[dict[str, str]], company_name: str) -> WebSign
             sig.community.append(link)
         elif kind == "scam":
             sig.scam_mentions.append(link)
-        # 'directory' / 'marketplace' results are ignored as noise for the website pick.
+        elif kind == "marketplace" and not any(p in link.lower() for p in _MARKETPLACE_NOISE_PATHS):
+            sig.marketplace.append(link)  # a real seller/store page = a lead
+        # 'directory' + generic marketplace search results are ignored as noise.
 
     # Prefer a name-matching site, then an actual storefront, then anything.
     matching = [u for u in website_urls if _strong_match(core, _domain_core(u))]
@@ -305,6 +315,8 @@ def extract_signals(results: list[dict[str, str]], company_name: str) -> WebSign
             f"multiple storefront domains ({distinct_commercial})",
             ", ".join(dict.fromkeys(registrable_domain(u) for u in commercial_urls)),
         )
+    if sig.marketplace:
+        sig.add_flag("sells on marketplace (verify seller)", sig.marketplace[0])
     if sig.scam_mentions:
         scam_url = next((m for m in sig.scam_mentions if m.startswith("http")), "") or scam_keyword_url
         sig.add_flag("scam / blacklist / complaint mention", scam_url)
