@@ -56,8 +56,18 @@ _DIRECTORY_DOMAINS = (
     "find-and-update.company-information.service.gov.uk", "bloomberg.com",
     "crunchbase.com", "dnb.com", "zaubacorp.com", "wikipedia.org", "google.com",
     "companieshouse.hk", "webb-site.com", "importyeti.com", "panjiva.com",
-    "signalhire.com", "rocketreach.co", "apollo.io",
+    "signalhire.com", "rocketreach.co", "apollo.io", "hongkongcompanylookup.com",
 )
+# Marketplaces / big platforms: a *listing* here is not the company's own site,
+# and running WHOIS on them returns the platform's age (misleading).
+_MARKETPLACE_DOMAINS = (
+    "etsy.com", "amazon.com", "amazon.co.uk", "aliexpress.com", "alibaba.com",
+    "ebay.com", "temu.com", "dhgate.com", "shopee.com", "lazada.com",
+    "walmart.com", "wish.com", "made-in-china.com", "yaman.com", "trustpilot.com",
+)
+# URL/snippet hints that a result is an actual storefront (Shopify-style).
+_COMMERCIAL_PATH_HINTS = ("/product", "/products", "/collections", "/cart", "/shop", "/pages/", "/checkout")
+_COMMERCIAL_TLDS = (".shop", ".store")
 
 _SHOPPING_KEYWORDS = (
     "shop", "store", "buy now", "add to cart", "checkout", "sale", "outlet",
@@ -93,16 +103,29 @@ def _host_in(url: str, domains: tuple[str, ...]) -> bool:
 
 
 def classify(url: str) -> str:
-    """Classify a result URL: social | community | scam | directory | website."""
+    """Classify a result URL: social | community | scam | marketplace | directory | website."""
+    host = registrable_domain(url)
     if _host_in(url, _SOCIAL_DOMAINS):
         return "social"
     if _host_in(url, _SCAM_DOMAINS):
         return "scam"
-    if _host_in(url, _COMMUNITY_DOMAINS) or "forum" in registrable_domain(url):
+    if _host_in(url, _COMMUNITY_DOMAINS) or "forum" in host:
         return "community"
-    if _host_in(url, _DIRECTORY_DOMAINS):
+    if _host_in(url, _MARKETPLACE_DOMAINS):
+        return "marketplace"
+    if _host_in(url, _DIRECTORY_DOMAINS) or ".gov." in host or host.endswith(".gov"):
         return "directory"
     return "website"
+
+
+def is_commercial(url: str, text: str = "") -> bool:
+    """Heuristic: does this result look like an actual storefront?"""
+    low = url.lower()
+    if any(low.endswith(tld) or f"{tld}/" in low for tld in _COMMERCIAL_TLDS):
+        return True
+    if any(hint in low for hint in _COMMERCIAL_PATH_HINTS):
+        return True
+    return any(k in (text or "").lower() for k in _SHOPPING_KEYWORDS)
 
 
 def company_core(name: str) -> str:
@@ -220,6 +243,7 @@ def extract_signals(results: list[dict[str, str]], company_name: str) -> WebSign
     sig = WebSignals()
 
     website_urls: list[str] = []
+    commercial_urls: list[str] = []
     for r in results:
         link = r.get("link", "")
         if not link:
@@ -227,23 +251,32 @@ def extract_signals(results: list[dict[str, str]], company_name: str) -> WebSign
         kind = classify(link)
         if kind == "website":
             website_urls.append(link)
+            if is_commercial(link, _text_of(r)):
+                commercial_urls.append(link)
         elif kind == "social":
             sig.socials.append(link)
         elif kind == "community":
             sig.community.append(link)
         elif kind == "scam":
             sig.scam_mentions.append(link)
-        # 'directory' results are ignored as noise.
+        # 'directory' / 'marketplace' results are ignored as noise for the website pick.
 
-    # Website + name-match flag (mismatch is a red flag, not a reason to drop).
-    if website_urls:
+    # Prefer a name-matching site, then an actual storefront, then anything.
+    matching = [u for u in website_urls if _strong_match(core, _domain_core(u))]
+    if matching:
+        sig.website = matching[0]
+        sig.website_matches_name = True
+    elif commercial_urls:
+        sig.website = commercial_urls[0]
+        sig.website_matches_name = False
+    elif website_urls:
         sig.website = website_urls[0]
-        sig.website_matches_name = _strong_match(core, _domain_core(website_urls[0]))
-        seen_domains = {registrable_domain(website_urls[0])}
-        for u in website_urls[1:]:
+        sig.website_matches_name = False
+    if sig.website:
+        primary = registrable_domain(sig.website)
+        for u in website_urls:
             dom = registrable_domain(u)
-            if dom and dom not in seen_domains:
-                seen_domains.add(dom)
+            if dom and dom != primary and dom not in sig.other_domains:
                 sig.other_domains.append(dom)
 
     # Scam keywords anywhere in the result text (record the URL as evidence).
@@ -256,23 +289,22 @@ def extract_signals(results: list[dict[str, str]], company_name: str) -> WebSign
             sig.scam_mentions.append(f"{host} (keyword)")
             scam_keyword_url = scam_keyword_url or link
 
-    # Compile risk flags, each with an evidence URL/detail where possible.
+    # Compile risk flags, worded by how strong the evidence actually is.
     if not website_urls:
-        sig.add_flag("no website found in search")
-    if sig.website and sig.website_matches_name is False:
-        sig.add_flag("website domain does not match company name", sig.website)
-    distinct = len({registrable_domain(u) for u in website_urls})
-    if distinct >= 2:
+        sig.add_flag("no company website found in search")
+    elif commercial_urls and not matching:
+        # The strong red flag: a storefront running under an unrelated name.
+        sig.add_flag("storefront under unrelated domain", commercial_urls[0])
+    elif sig.website and sig.website_matches_name is False:
+        # Weaker: top results just don't match — could be noise; verify.
+        sig.add_flag("no name-matching website (top results unrelated)", sig.website)
+
+    distinct_commercial = len({registrable_domain(u) for u in commercial_urls})
+    if distinct_commercial >= 2:
         sig.add_flag(
-            f"multiple distinct domains ({distinct})",
-            ", ".join(dict.fromkeys(registrable_domain(u) for u in website_urls)),
+            f"multiple storefront domains ({distinct_commercial})",
+            ", ".join(dict.fromkeys(registrable_domain(u) for u in commercial_urls)),
         )
-    shop_url = next(
-        (r.get("link", "") for r in results if any(k in _text_of(r) for k in _SHOPPING_KEYWORDS)),
-        "",
-    )
-    if shop_url:
-        sig.add_flag("shopping / e-commerce keywords in results", shop_url)
     if sig.scam_mentions:
         scam_url = next((m for m in sig.scam_mentions if m.startswith("http")), "") or scam_keyword_url
         sig.add_flag("scam / blacklist / complaint mention", scam_url)

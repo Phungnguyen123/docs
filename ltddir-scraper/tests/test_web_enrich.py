@@ -41,15 +41,25 @@ def test_looks_random_name() -> None:
     assert looks_random_name("PURE HORIZON LIMITED") is False
 
 
-def test_extract_signals_keeps_mismatched_website_and_flags_it() -> None:
-    # The real case: HELENA LIMITED -> sainthelenabank.com is surfaced AND flagged.
+def test_extract_signals_unrelated_noise_is_weak_flag() -> None:
+    # HELENA -> a law-firm/news page (not commercial) is weak noise, not a store.
     results = [
         {"link": "https://www.sainthelenabank.com/about-us/", "title": "Bank", "snippet": ""},
     ]
     sig = extract_signals(results, "HELENA LIMITED")
-    assert sig.website == "https://www.sainthelenabank.com/about-us/"
     assert sig.website_matches_name is False
-    assert "website domain does not match company name" in sig.risk_cell()
+    assert "no name-matching website (top results unrelated)" in sig.risk_cell()
+    assert "storefront" not in sig.risk_cell()
+
+
+def test_extract_signals_storefront_under_unrelated_domain() -> None:
+    # The strong red flag: a real storefront running under a different name.
+    results = [
+        {"link": "https://cheap-outlet-deals.shop/pages/contact", "title": "Buy now", "snippet": "sale outlet"},
+    ]
+    sig = extract_signals(results, "HELENA LIMITED")
+    assert sig.website == "https://cheap-outlet-deals.shop/pages/contact"
+    assert "storefront under unrelated domain" in sig.risk_cell()
 
 
 def test_extract_signals_no_website_flag() -> None:
@@ -58,31 +68,40 @@ def test_extract_signals_no_website_flag() -> None:
     ]
     sig = extract_signals(results, "X LIMITED")
     assert sig.website == ""
-    assert "no website found in search" in sig.risk_cell()
+    assert "no company website found in search" in sig.risk_cell()
     assert "linkedin.com/company/x" in sig.socials_cell()
 
 
-def test_extract_signals_collects_community_and_scam() -> None:
+def test_extract_signals_marketplace_not_treated_as_website() -> None:
+    # Etsy listing must NOT become the "website" (and must not be WHOIS'd).
     results = [
-        {"link": "https://vraxionyx.com", "title": "Shop now", "snippet": "buy now sale outlet"},
-        {"link": "https://www.reddit.com/r/scams/comments/abc", "title": "Is Vraxionyx a scam?", "snippet": "fraud"},
-        {"link": "https://www.scamadviser.com/check-website/vraxionyx.com", "title": "", "snippet": ""},
+        {"link": "https://www.etsy.com/de/market/foo", "title": "", "snippet": ""},
+    ]
+    sig = extract_signals(results, "VELOURA LIMITED")
+    assert sig.website == ""
+    assert "no company website found in search" in sig.risk_cell()
+
+
+def test_extract_signals_name_matching_store_is_ok() -> None:
+    # A store on the company's own matching domain is fine, not a red flag.
+    results = [
+        {"link": "https://vraxionyx.com/collections/all", "title": "Shop", "snippet": "buy now"},
+        {"link": "https://www.reddit.com/r/scams/comments/abc", "title": "scam?", "snippet": "fraud"},
     ]
     sig = extract_signals(results, "VRAXIONYX LIMITED")
+    assert sig.website_matches_name is True
+    assert "storefront under unrelated domain" not in sig.risk_cell()
     assert "reddit.com" in sig.community_cell()
-    assert sig.scam_cell() != ""
-    risks = sig.risk_cell()
-    assert "shopping / e-commerce keywords in results" in risks
-    assert "scam / blacklist / complaint mention" in risks
+    assert "scam / blacklist / complaint mention" in sig.risk_cell()
 
 
-def test_extract_signals_multiple_domains_flag() -> None:
+def test_extract_signals_multiple_storefront_domains_flag() -> None:
     results = [
         {"link": "https://storeone.shop", "title": "", "snippet": ""},
         {"link": "https://storetwo.store", "title": "", "snippet": ""},
     ]
     sig = extract_signals(results, "APEX MONTARO LIMITED")
-    assert "multiple distinct domains (2)" in sig.risk_cell()
+    assert "multiple storefront domains (2)" in sig.risk_cell()
     assert "storetwo.store" in sig.other_domains_cell()
 
 
@@ -117,9 +136,9 @@ def test_extract_signals_evidence_has_urls() -> None:
     sig = extract_signals(results, "HELENA LIMITED")
     ev = sig.evidence_cell()
     # Every flag with evidence must carry a verifiable URL.
-    assert "https://cheap-outlet-deals.shop/p" in ev  # mismatch + shopping evidence
+    assert "https://cheap-outlet-deals.shop/p" in ev  # storefront evidence
     assert "scamadviser.com" in ev
-    assert "website domain does not match company name:" in ev
+    assert "storefront under unrelated domain:" in ev
 
 
 def test_annotate_batch_evidence_lists_peers() -> None:
