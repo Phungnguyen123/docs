@@ -19,6 +19,7 @@ Every suspect carries the reason + an evidence URL for manual verification.
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -39,8 +40,8 @@ _EXTRA_MENTION_DOMAINS = (
 )
 
 
-def categorize(domain: str, brands: list[str]) -> str:
-    """Classify a suspect: impersonation vs mention vs unknown site to verify."""
+def categorize(domain: str, brands: list[str], *, verified: bool = True) -> str:
+    """Classify a suspect: impersonation vs mention vs (un)verified site."""
     bare = "".join(ch for ch in domain.lower() if ch.isalnum())
     if any("".join(b.lower().split()) in bare for b in brands if b):
         return "impersonation (brand in domain)"
@@ -49,6 +50,8 @@ def categorize(domain: str, brands: list[str]) -> str:
         return "known platform / mention"
     if classify("https://" + host) in ("directory", "social", "community", "scam", "marketplace"):
         return "known platform / mention"
+    if not verified:
+        return "unverified — search match only"
     return "unknown site — verify"
 
 CRTSH_URL = "https://crt.sh/"
@@ -100,6 +103,31 @@ def extract_crtsh_domains(records: list[dict[str, Any]]) -> set[str]:
     return domains
 
 
+def find_excerpt(page_text: str, needle: str, *, width: int = 70) -> str:
+    """Return a context excerpt around ``needle`` in ``page_text``, or ''.
+
+    Whitespace/case-insensitive. Tries the full needle, then a distinctive
+    leading chunk (so "Office 3906, 39th, The Center..." still matches a page
+    that formats the address slightly differently).
+    """
+    text = re.sub(r"\s+", " ", page_text or "")
+    low = text.lower()
+    n = re.sub(r"\s+", " ", needle or "").strip().lower()
+    if not n:
+        return ""
+    probes = [n]
+    words = n.replace(",", " ").split()
+    if len(words) >= 5:
+        probes.append(" ".join(words[:5]))  # distinctive leading chunk
+    for probe in probes:
+        i = low.find(probe)
+        if i >= 0:
+            start = max(0, i - 30)
+            end = min(len(text), i + len(probe) + 30)
+            return f"...{text[start:end].strip()}..."
+    return ""
+
+
 def extract_urlscan(data: dict[str, Any]) -> list[tuple[str, str]]:
     """Return (domain, result_url) pairs from a urlscan search response."""
     out: list[tuple[str, str]] = []
@@ -124,6 +152,7 @@ class Suspect:
     reasons: list[tuple[str, str]] = field(default_factory=list)  # (label, evidence)
     registered: str = ""
     category: str = ""
+    verified: bool = False  # a watch-listed string was confirmed on the page
 
     def add(self, source: str, label: str, evidence: str = "") -> None:
         self.sources.add(source)
@@ -133,7 +162,7 @@ class Suspect:
     def score(self) -> int:
         """Higher = more suspicious. Impersonation ranks up; mere mentions down."""
         s = len(self.sources)
-        if any("address" in lbl.lower() for lbl, _ in self.reasons):
+        if self.verified and any("address" in lbl.lower() for lbl, _ in self.reasons):
             s += 2
         days = age_days(self.registered, today=_today_utc()) if self.registered else None
         if days is not None and 0 <= days <= 180:
@@ -169,17 +198,32 @@ class BrandMonitor:
         age: DomainAgeLookup | None = None,
         timeout_s: float = 25.0,
         pause_s: float = 0.5,
+        verify: bool = True,
     ) -> None:
         self._log = get_logger()
         self._enricher = enricher
         self._age = age or DomainAgeLookup()
         self._timeout = timeout_s
         self._pause = pause_s
+        self._verify = verify
         self._session = requests.Session()
-        self._session.headers.update({"User-Agent": "brand-monitor/1.0"})
+        self._session.headers.update(
+            {"User-Agent": "Mozilla/5.0 (compatible; brand-monitor/1.0)"}
+        )
         import os
 
         self._urlscan_key = os.environ.get("URLSCAN_API_KEY", "")
+
+    def _verify_page(self, url: str, needle: str) -> str:
+        """Fetch ``url`` and return a context excerpt if ``needle`` is present."""
+        try:
+            resp = self._session.get(url, timeout=15)
+            if resp.status_code == 200 and "text/html" in resp.headers.get("Content-Type", ""):
+                text = re.sub(r"<[^>]+>", " ", resp.text)
+                return find_excerpt(text, needle)
+        except requests.RequestException:
+            pass
+        return ""
 
     def scan(self, wl: Watchlist, *, max_domains: int = 200) -> list[Suspect]:
         """Return de-duplicated suspects across all sources."""
@@ -209,29 +253,38 @@ class BrandMonitor:
         # 3) web search — pages reusing an ADDRESS or ENTITY (strongest signal).
         if self._enricher is not None and self._enricher.enabled():
             for addr in wl.addresses:
-                for dom, url in self._web(f'"{addr}"'):
-                    c = candidate(dom)
-                    if c:
-                        c.add("search", "web page reuses protected ADDRESS", url)
+                self._web_pivot(f'"{addr}"', addr, "ADDRESS", candidate)
             for ent in wl.entities:
-                for dom, url in self._web(f'"{ent}"'):
-                    c = candidate(dom)
-                    if c:
-                        c.add("search", f"web page reuses entity name '{ent}'", url)
+                self._web_pivot(f'"{ent}"', ent, f"entity name '{ent}'", candidate)
 
-        # Categorise, then enrich with domain age (bounded).
+        # Categorise (verified sites rank above unverified search-only hits).
         for s in suspects.values():
-            s.category = categorize(s.domain, wl.brands)
+            s.category = categorize(s.domain, wl.brands, verified=s.verified)
         ranked = sorted(suspects.values(), key=lambda s: len(s.sources), reverse=True)[:max_domains]
         for s in ranked:
             s.registered = self._age.registration_date(s.domain)
         self._log.info("Brand monitor: %d suspect domain(s)", len(ranked))
-        # Impersonation first, then unknown-site, then mere mentions.
-        _cat_rank = {"impersonation": 0, "unknown": 1, "known": 2}
+        # Impersonation first, then verified unknown-site, then unverified, mentions.
+        _cat_rank = {"impersonation": 0, "unknown": 1, "unverified": 2, "known": 3}
         return sorted(
             ranked,
             key=lambda s: (_cat_rank.get(s.category.split()[0], 1), -s.score()),
         )
+
+    def _web_pivot(self, query: str, needle: str, label: str, candidate) -> None:  # noqa: ANN001
+        """Search ``query``; for each hit, verify ``needle`` is really on the page."""
+        for dom, url in self._web(query):
+            c = candidate(dom)
+            if c is None:
+                continue
+            excerpt = self._verify_page(url, needle) if self._verify else ""
+            if excerpt:
+                c.verified = True
+                c.add("search", f"page reuses {label} (verified on page)", f"{url}  →  {excerpt}")
+            elif self._verify:
+                c.add("search", f"{label} match unverified (search-engine result only)", url)
+            else:
+                c.add("search", f"web page reuses {label}", url)
 
     # ---- network helpers (each degrades to empty on failure) ------------- #
     def _crtsh(self, term: str) -> set[str]:

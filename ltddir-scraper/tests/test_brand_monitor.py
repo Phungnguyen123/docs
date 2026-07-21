@@ -49,11 +49,11 @@ def test_extract_urlscan() -> None:
 
 
 def test_suspect_score_and_row() -> None:
-    s = Suspect(domain="globalchaincp.com")
+    s = Suspect(domain="globalchaincp.com", verified=True)
     s.add("crt.sh", "TLS cert contains brand 'bbcincorp'", "https://crt.sh/?q=%25bbcincorp%25")
-    s.add("search", "web page reuses protected ADDRESS", "https://globalchaincp.com/")
+    s.add("search", "page reuses ADDRESS (verified on page)", "https://globalchaincp.com/")
     s.registered = "2100-01-01"  # future -> not "young"; keeps test deterministic
-    # 2 sources + address bonus (2) = 4
+    # 2 sources + verified-address bonus (2) = 4
     assert s.score() == 4
     row = s.to_row()
     assert row["Suspect Domain"] == "globalchaincp.com"
@@ -74,7 +74,19 @@ def test_categorize() -> None:
     assert categorize("bbcincorp-hk.com", brands).startswith("impersonation")
     assert categorize("trustpilot.com", brands).startswith("known platform")
     assert categorize("crunchbase.com", brands).startswith("known platform")
-    assert categorize("afficaglobal.com", brands) == "unknown site — verify"
+    assert categorize("afficaglobal.com", brands, verified=True) == "unknown site — verify"
+    # A search hit not confirmed on the page is downgraded, not trusted.
+    assert categorize("x-kom.pl", brands, verified=False).startswith("unverified")
+
+
+def test_find_excerpt() -> None:
+    from scraper.brand_monitor import find_excerpt
+    page = "Contact us. Registered office: Office 3906, 39th Floor, The Center. Thanks."
+    ex = find_excerpt(page, "Office 3906, 39th Floor, The Center")
+    assert "Office 3906" in ex and ex.startswith("...")
+    # Slightly different formatting still matches on the leading chunk.
+    assert find_excerpt("... office 3906 39th the center 99 queen ...", "Office 3906, 39th, The Center, 99 Queen's Road")
+    assert find_excerpt("totally unrelated page about cats", "Office 3906") == ""
 
 
 class _FakeAge:
@@ -109,7 +121,7 @@ def test_scan_flags_impersonator_not_official(monkeypatch) -> None:
             {"link": "https://www.bbcincorp.com/about"},  # official -> must be ignored
         ],
     })
-    mon = BrandMonitor(enricher=enricher, age=_FakeAge(), pause_s=0)
+    mon = BrandMonitor(enricher=enricher, age=_FakeAge(), pause_s=0, verify=False)
     # Stub the keyless network calls.
     monkeypatch.setattr(mon, "_crtsh", lambda term: {"bbcincorp-hk.com", "bbcincorp.com"})
     monkeypatch.setattr(mon, "_urlscan", lambda term: [("fakebbc.net", "https://fakebbc.net/x")])

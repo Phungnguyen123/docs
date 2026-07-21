@@ -41,6 +41,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--watchlist", type=Path, default=DEFAULT_WATCHLIST, help="watchlist .json")
     p.add_argument("--output", type=Path, default=DEFAULT_OUTPUT, help="output .xlsx")
     p.add_argument("--no-search", action="store_true", help="keyless only (skip Google/SerpAPI web search)")
+    p.add_argument("--no-verify", action="store_true", help="skip fetching pages to confirm the string is really there (faster, noisier)")
     p.add_argument("--max-domains", type=int, default=200, help="cap suspect domains enriched")
     p.add_argument("--verbose", action="store_true", help="debug logging")
     return p.parse_args()
@@ -72,7 +73,7 @@ def main() -> int:
             log.warning("No search key found; using keyless sources only (crt.sh + urlscan).")
             enricher = None
 
-    monitor = BrandMonitor(enricher=enricher, age=DomainAgeLookup())
+    monitor = BrandMonitor(enricher=enricher, age=DomainAgeLookup(), verify=not args.no_verify)
     suspects = monitor.scan(wl, max_domains=args.max_domains)
 
     df = build_brand_sheet(suspects)
