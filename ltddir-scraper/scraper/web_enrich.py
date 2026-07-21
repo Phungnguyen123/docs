@@ -33,7 +33,7 @@ from urllib.parse import urlparse
 import pandas as pd
 import requests
 
-from .utils import get_logger, normalize_name
+from .utils import get_logger, normalize_name, redact
 
 # --------------------------------------------------------------------------- #
 # Domain classification
@@ -507,17 +507,27 @@ class WebEnricher:
         return extract_signals(results, company_name)
 
     def _get(self, url: str, params: dict[str, Any]) -> dict[str, Any]:
-        last_exc: Exception | None = None
+        last_msg = "request failed"
         for attempt in range(self._max_retries + 1):
             try:
                 resp = self._session.get(url, params=params, timeout=self._timeout)
                 resp.raise_for_status()
                 return resp.json()
-            except (requests.RequestException, ValueError) as exc:
-                last_exc = exc
+            except requests.HTTPError as exc:
+                # Surface the provider's error message, never the URL (has the key).
+                detail = ""
+                try:
+                    detail = str(exc.response.json().get("error", {}).get("message", ""))
+                except Exception:  # noqa: BLE001
+                    detail = ""
+                last_msg = f"HTTP {exc.response.status_code}: {redact(detail) or 'bad request'}"
                 if attempt < self._max_retries:
                     time.sleep(self._backoff * (2**attempt))
-        raise requests.RequestException(str(last_exc))
+            except (requests.RequestException, ValueError) as exc:
+                last_msg = redact(str(exc))
+                if attempt < self._max_retries:
+                    time.sleep(self._backoff * (2**attempt))
+        raise requests.RequestException(last_msg)
 
 
 def _normalize_serpapi(data: dict[str, Any]) -> list[dict[str, str]]:

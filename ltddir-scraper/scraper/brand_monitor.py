@@ -27,7 +27,7 @@ import pandas as pd
 import requests
 
 from .domain_age import DomainAgeLookup, _today_utc, age_days
-from .utils import get_logger, normalize_name
+from .utils import get_logger, redact
 from .web_enrich import WebEnricher, registrable_domain
 
 CRTSH_URL = "https://crt.sh/"
@@ -208,7 +208,7 @@ class BrandMonitor:
             if resp.status_code == 200:
                 return extract_crtsh_domains(resp.json())
         except (requests.RequestException, ValueError) as exc:
-            self._log.warning("crt.sh failed for %s: %s", term, exc)
+            self._log.warning("crt.sh failed for %s: %s", term, redact(str(exc)))
         time.sleep(self._pause)
         return set()
 
@@ -221,7 +221,7 @@ class BrandMonitor:
             if resp.status_code == 200:
                 return extract_urlscan(resp.json())
         except (requests.RequestException, ValueError) as exc:
-            self._log.warning("urlscan failed for %s: %s", term, exc)
+            self._log.warning("urlscan failed for %s: %s", term, redact(str(exc)))
         time.sleep(self._pause)
         return []
 
@@ -230,7 +230,7 @@ class BrandMonitor:
         try:
             results = self._enricher.raw_results(query)
         except requests.RequestException as exc:
-            self._log.warning("web search failed for %s: %s", query, exc)
+            self._log.warning("web search failed for %s: %s", query, redact(str(exc)))
             return []
         out = [(registrable_domain(r.get("link", "")), r.get("link", "")) for r in results]
         time.sleep(self._pause)

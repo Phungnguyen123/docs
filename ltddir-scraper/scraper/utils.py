@@ -58,6 +58,20 @@ def get_logger() -> logging.Logger:
     return logging.getLogger(_LOGGER_NAME)
 
 
+_SECRET_PARAM_RE = re.compile(
+    r"(?i)\b(api_?key|key|cx|token|access_token|serpapi[_-]?key)=([^&\s\"']+)"
+)
+
+
+def redact(text: str) -> str:
+    """Mask secret query parameters (api_key/key/cx/token/...) in a string.
+
+    Used before logging anything that might embed a URL with credentials, so a
+    leaked key never lands in logs, screenshots, or error messages.
+    """
+    return _SECRET_PARAM_RE.sub(lambda m: f"{m.group(1)}=***REDACTED***", str(text))
+
+
 # --------------------------------------------------------------------------- #
 # Text normalisation & matching
 # --------------------------------------------------------------------------- #
