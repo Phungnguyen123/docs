@@ -28,7 +28,28 @@ import requests
 
 from .domain_age import DomainAgeLookup, _today_utc, age_days
 from .utils import get_logger, redact
-from .web_enrich import WebEnricher, registrable_domain
+from .web_enrich import WebEnricher, classify, registrable_domain
+
+# Extra known directory/review/data-broker platforms that merely *mention*
+# companies (not impersonators) — filtered down so real abuse stands out.
+_EXTRA_MENTION_DOMAINS = (
+    "zoominfo.com", "offshorecorptalk.com", "offshorereviews.com", "500px.com",
+    "glassdoor.com", "indeed.com", "kompass.com", "yelp.com", "medium.com",
+    "mycareersfuture.gov.sg", "sgpbusiness.com", "opengovsg.com", "about.me",
+)
+
+
+def categorize(domain: str, brands: list[str]) -> str:
+    """Classify a suspect: impersonation vs mention vs unknown site to verify."""
+    bare = "".join(ch for ch in domain.lower() if ch.isalnum())
+    if any("".join(b.lower().split()) in bare for b in brands if b):
+        return "impersonation (brand in domain)"
+    host = registrable_domain(domain) if "://" in domain else domain.lower()
+    if host.endswith(_EXTRA_MENTION_DOMAINS) or any(host == d or host.endswith("." + d) for d in _EXTRA_MENTION_DOMAINS):
+        return "known platform / mention"
+    if classify("https://" + host) in ("directory", "social", "community", "scam", "marketplace"):
+        return "known platform / mention"
+    return "unknown site — verify"
 
 CRTSH_URL = "https://crt.sh/"
 URLSCAN_SEARCH = "https://urlscan.io/api/v1/search/"
@@ -102,6 +123,7 @@ class Suspect:
     sources: set[str] = field(default_factory=set)
     reasons: list[tuple[str, str]] = field(default_factory=list)  # (label, evidence)
     registered: str = ""
+    category: str = ""
 
     def add(self, source: str, label: str, evidence: str = "") -> None:
         self.sources.add(source)
@@ -109,18 +131,23 @@ class Suspect:
             self.reasons.append((label, evidence))
 
     def score(self) -> int:
-        """Higher = more suspicious (more sources + address reuse + fresh domain)."""
+        """Higher = more suspicious. Impersonation ranks up; mere mentions down."""
         s = len(self.sources)
         if any("address" in lbl.lower() for lbl, _ in self.reasons):
             s += 2
         days = age_days(self.registered, today=_today_utc()) if self.registered else None
         if days is not None and 0 <= days <= 180:
             s += 1
+        if self.category.startswith("impersonation"):
+            s += 3
+        elif self.category.startswith("known platform"):
+            s = max(0, s - 2)  # directory/review mentions are not abuse
         return s
 
     def to_row(self) -> dict[str, str]:
         return {
             "Suspect Domain": self.domain,
+            "Category": self.category,
             "Risk Score": self.score(),
             "Sources": ", ".join(sorted(self.sources)),
             "Domain Registered": self.registered,
@@ -192,12 +219,19 @@ class BrandMonitor:
                     if c:
                         c.add("search", f"web page reuses entity name '{ent}'", url)
 
-        # Enrich with domain age (bounded).
+        # Categorise, then enrich with domain age (bounded).
+        for s in suspects.values():
+            s.category = categorize(s.domain, wl.brands)
         ranked = sorted(suspects.values(), key=lambda s: len(s.sources), reverse=True)[:max_domains]
         for s in ranked:
             s.registered = self._age.registration_date(s.domain)
         self._log.info("Brand monitor: %d suspect domain(s)", len(ranked))
-        return sorted(ranked, key=lambda s: s.score(), reverse=True)
+        # Impersonation first, then unknown-site, then mere mentions.
+        _cat_rank = {"impersonation": 0, "unknown": 1, "known": 2}
+        return sorted(
+            ranked,
+            key=lambda s: (_cat_rank.get(s.category.split()[0], 1), -s.score()),
+        )
 
     # ---- network helpers (each degrades to empty on failure) ------------- #
     def _crtsh(self, term: str) -> set[str]:
@@ -245,7 +279,7 @@ class BrandMonitor:
 
 def build_brand_sheet(suspects: list[Suspect]) -> pd.DataFrame:
     """Build the 'Brand Abuse' DataFrame (empty frame if no suspects)."""
-    cols = ["Suspect Domain", "Risk Score", "Sources", "Domain Registered", "Why Flagged", "Evidence"]
+    cols = ["Suspect Domain", "Category", "Risk Score", "Sources", "Domain Registered", "Why Flagged", "Evidence"]
     if not suspects:
         return pd.DataFrame(columns=cols)
     return pd.DataFrame([s.to_row() for s in suspects], columns=cols)

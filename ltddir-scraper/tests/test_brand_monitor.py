@@ -63,8 +63,18 @@ def test_suspect_score_and_row() -> None:
 
 def test_build_brand_sheet_empty() -> None:
     df = build_brand_sheet([])
-    assert list(df.columns) == ["Suspect Domain", "Risk Score", "Sources", "Domain Registered", "Why Flagged", "Evidence"]
+    assert list(df.columns) == ["Suspect Domain", "Category", "Risk Score", "Sources", "Domain Registered", "Why Flagged", "Evidence"]
     assert len(df) == 0
+
+
+def test_categorize() -> None:
+    from scraper.brand_monitor import categorize
+    brands = ["bbcincorp", "bcorpsec"]
+    assert categorize("bbcincorplimited.website3.me", brands).startswith("impersonation")
+    assert categorize("bbcincorp-hk.com", brands).startswith("impersonation")
+    assert categorize("trustpilot.com", brands).startswith("known platform")
+    assert categorize("crunchbase.com", brands).startswith("known platform")
+    assert categorize("afficaglobal.com", brands) == "unknown site — verify"
 
 
 class _FakeAge:
@@ -109,6 +119,6 @@ def test_scan_flags_impersonator_not_official(monkeypatch) -> None:
     assert "bbcincorp-hk.com" in domains         # typosquat via crt.sh
     assert "fakebbc.net" in domains              # via urlscan
     assert "bbcincorp.com" not in domains        # official allow-listed
-    # The address-reuse suspect should outrank a single-source typosquat.
-    top = suspects[0]
-    assert top.domain == "globalchaincp.com"
+    # A brand-in-domain typosquat is impersonation → ranks above address reuse.
+    assert suspects[0].domain == "bbcincorp-hk.com"
+    assert suspects[0].category.startswith("impersonation")
