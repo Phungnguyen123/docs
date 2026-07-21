@@ -30,6 +30,28 @@ def tool_paths(tool: str) -> tuple[Path, Path]:
     )
 
 
+def load_dotenv(path: Path | None = None) -> None:
+    """Load ``KEY=VALUE`` lines from a local .env into os.environ (no override).
+
+    Lets secrets (SERPAPI_KEY, GOOGLE_API_KEY, CH_API_KEY, URLSCAN_API_KEY) live
+    in a gitignored file instead of being typed into the shell — where they would
+    otherwise be saved in plaintext PowerShell/Bash history. Existing environment
+    variables always win, and values are never logged.
+    """
+    env_path = path or (BASE_DIR / ".env")
+    if not env_path.exists():
+        return
+    for raw in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
 @dataclass(frozen=True)
 class Settings:
     """Runtime settings for a scraping run."""

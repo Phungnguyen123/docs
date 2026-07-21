@@ -181,6 +181,44 @@ with `--limit 5` first.
 
 ---
 
+## Brand-abuse monitor (`main_brand.py`) — find sites impersonating your group
+
+Hunts for websites that reuse a brand group's protected assets — typosquats,
+clone sites, and impersonation/recovery-scam pages (e.g. one that reused
+BBCIncorp's registered-office address). Pivots a **watchlist** across:
+
+- **crt.sh** (Certificate Transparency, free, no key) — every TLS cert whose
+  domain contains a brand token → typosquats/clones
+- **urlscan.io** (free; key raises limits) — scanned pages mentioning a brand
+- **Web search** (optional) — pages reusing a protected *address* or *entity
+  name*, via the **official Google Programmable Search API (recommended)** or
+  SerpAPI
+
+Your own domains are **allow-listed** so they're never flagged. Each suspect
+carries the reason, source(s), domain age, and an evidence URL, ranked by a risk
+score (more sources + address reuse + freshly registered domain = higher).
+
+```bash
+cp .env.example .env          # put keys here — NOT in your shell history
+cp input/watchlist.example.json input/watchlist.json   # then edit your assets
+python main_brand.py                 # crt.sh + urlscan + web search
+python main_brand.py --no-search     # keyless only (most private)
+```
+
+Output: `output/brand_abuse.xlsx` (Suspect Domain, Risk Score, Sources, Domain
+Registered, Why Flagged, Evidence).
+
+### Security note on search keys
+
+- Keys load from a **gitignored `.env`** — never type them in the terminal
+  (PowerShell/Bash save them to plaintext history). If a key ever appeared in a
+  screenshot, **rotate it**.
+- Prefer the **official Google Programmable Search API** over SerpAPI: SerpAPI is
+  a third-party Google scraper (against Google's ToS and may be blocked); Google's
+  own API is compliant. The tool auto-detects whichever you configure.
+- The most private option is `--no-search` (crt.sh + urlscan only): no queries
+  leave to a search provider. Set a **usage cap/alert** on any paid key.
+
 ## About the sources
 
 `ltddir.com` is **not** an official government registry — it is a public directory
@@ -236,6 +274,7 @@ ltddir-scraper/
 │   ├── shop_scan.py          # scam-shop page scorer
 │   ├── networks.py           # union-find link analysis (Suspected Networks)
 │   ├── osint_trace.py        # forum/Reddit/Telegram/scam-report pivot sweep
+│   ├── brand_monitor.py      # brand-impersonation finder (crt.sh + urlscan)
 │   └── exporter.py           # Excel I/O + resumable progress store (shared)
 ├── input/hk/                 # put the Hong Kong data.gov.hk dataset file(s) here
 ├── tests/                    # offline unit tests (no network needed)

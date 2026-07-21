@@ -19,3 +19,9 @@ input/hk/*.csv
 input/hk/*.xlsx
 input/hk/*.xls
 !input/hk/README.txt
+
+# Secrets — never commit
+.env
+
+# Real watchlist may contain internal asset lists; keep only the example
+input/watchlist.json

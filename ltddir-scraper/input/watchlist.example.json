@@ -1,0 +1,20 @@
+{
+  "_comment": "Copy this file to input/watchlist.json and edit for your brand group. brands = distinctive brand tokens searched in cert-transparency + urlscan; official_domains = your real domains (allow-listed, never flagged); addresses / entities = strings that impersonators reuse (searched on the web).",
+  "brands": [
+    "bbcincorp",
+    "bcorpsec"
+  ],
+  "official_domains": [
+    "bbcincorp.com",
+    "bbcincorp.sg",
+    "bbcincorp.hk"
+  ],
+  "addresses": [
+    "Office 3906, 39th Floor, The Center, 99 Queen's Road Central, Hong Kong"
+  ],
+  "entities": [
+    "BBCIncorp Limited",
+    "BBCIncorp Pte. Ltd.",
+    "BCorpSec Limited"
+  ]
+}
