@@ -201,14 +201,20 @@ class BrandMonitor:
 
     # ---- network helpers (each degrades to empty on failure) ------------- #
     def _crtsh(self, term: str) -> set[str]:
-        try:
-            resp = self._session.get(
-                CRTSH_URL, params={"q": f"%{term}%", "output": "json"}, timeout=self._timeout
-            )
-            if resp.status_code == 200:
-                return extract_crtsh_domains(resp.json())
-        except (requests.RequestException, ValueError) as exc:
-            self._log.warning("crt.sh failed for %s: %s", term, redact(str(exc)))
+        # crt.sh is free but often slow; give it a longer timeout and one retry.
+        for attempt in range(2):
+            try:
+                resp = self._session.get(
+                    CRTSH_URL, params={"q": f"%{term}%", "output": "json"}, timeout=60
+                )
+                if resp.status_code == 200:
+                    return extract_crtsh_domains(resp.json())
+                break
+            except (requests.RequestException, ValueError) as exc:
+                if attempt == 0:
+                    time.sleep(2)
+                    continue
+                self._log.warning("crt.sh failed for %s: %s", term, redact(str(exc)))
         time.sleep(self._pause)
         return set()
 
