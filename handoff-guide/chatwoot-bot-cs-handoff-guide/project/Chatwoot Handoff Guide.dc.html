@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/colors.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/typography.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/effects.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/tech.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/styles.css">
+<script src="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/_ds_bundle.js"></script>
+<style>
+:root{--type-title:64px;--type-subtitle:42px;--type-body:30px;--type-small:26px;--type-eyebrow:24px;--pad-x:96px;--pad-top:88px;--pad-bottom:80px;--gap-title:56px;--gap-item:24px}
+body{margin:0;font-family:'Poppins',system-ui,sans-serif}
+a{color:#007EFF;text-decoration:none}
+a:hover{color:#004099}
+</style>
+</helmet>
+<x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%" data-uneditable="">
+
+<section data-label="Title" data-screen-label="01" data-speaker-notes="Option D: assignee decides who answers, status decides when. Four steps, all inside Chatwoot." style="background:radial-gradient(120% 120% at 50% 0%,#004099 0%,#0A0E1A 62%);display:flex;flex-direction:column;justify-content:center;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<img src="assets/logo-light.png" alt="BBCIncorp" style="width:280px;height:auto;margin-bottom:64px">
+<div style="display:inline-flex;align-self:flex-start;padding:10px 24px;border-radius:999px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.16);font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#7FC4FF;margin-bottom:36px">USER GUIDELINE · OPTION D (V.190826)</div>
+<h1 style="margin:0;font-size:96px;line-height:1.05;letter-spacing:-0.02em;font-weight:800;max-width:1400px">Chatbot &amp; CS Team Handoff on Chatwoot</h1>
+<p style="margin:32px 0 0;font-size:var(--type-subtitle);line-height:1.35;font-weight:500;color:#9FD0FF;max-width:1200px">How the CS team passes a WhatsApp/Livechat conversation to BSmart and back.</p>
+</section>
+
+<section data-label="Core Principles" data-screen-label="02" data-speaker-notes="Two fields only. Assignee = who answers. Status = when the bot is allowed to answer." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Core Principles</h2>
+<p style="margin:20px 0 0;font-size:var(--type-body);color:#4A5568;max-width:1100px">Only two fields control the handoff. Everything else follows from them.</p>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:var(--gap-title)">
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:44px 40px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:20px">
+<div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#00A7FD,#00F5FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700">1</div>
+<h3 style="margin:0;font-size:38px;font-weight:700;color:#004099;letter-spacing:-0.01em">Assignee = WHO</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#4A5568">Decides whether a human or the bot handles the conversation.</p>
+<div style="display:flex;flex-direction:column;gap:14px;font-size:var(--type-small);line-height:1.45;color:#0A0E1A">
+<div><strong style="font-weight:600"><u style="color: var(--bbc-amber)">CS agent</u> assigned</strong> — bot is off.</div>
+<div><strong style="font-weight:600"><u>Agent Bot</u> assigned</strong> — bot is on.</div>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:44px 40px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:20px">
+<div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#00A7FD,#00F5FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700">2</div>
+<h3 style="margin:0;font-size:38px;font-weight:700;color:#004099;letter-spacing:-0.01em">Status = Pending</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#4A5568">For new inbound conversations.</p>
+<div style="display:flex;flex-direction:column;gap:14px;font-size:var(--type-small);line-height:1.45;color:#0A0E1A">
+<div>Bot replies <strong style="font-weight:600">within business hours</strong>.</div>
+<div>Outside hours it posts the support window or a form.</div>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:44px 40px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:20px">
+<div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#00A7FD,#00F5FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700">3</div>
+<h3 style="margin:0;font-size:38px;font-weight:700;color:#004099;letter-spacing:-0.01em">Status = Open</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#4A5568">For a live case that needs cover.</p>
+<div style="display:flex;flex-direction:column;gap:14px;font-size:var(--type-small);line-height:1.45;color:#0A0E1A">
+<div>Reassigned to Agent Bot, the bot replies <strong style="font-weight:600">immediately, 24/7</strong>.</div>
+<div>Business hours no longer apply.</div>
+</div>
+</div>
+</div>
+</section>
+
+<sc-if value="{{ showQuickReference }}" hint-placeholder-val="{{ true }}">
+<section data-label="Quick Reference" data-screen-label="03" data-speaker-notes="One table to keep open next to Chatwoot. Read left to right: what you set, what the bot does." style="background:#0A0E1A;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em">Quick Reference</h2>
+<p style="margin:20px 0 0;font-size:var(--type-body);color:#9AA7BD">Four combinations cover every conversation.</p>
+<div style="margin-top:var(--gap-title);display:grid;grid-template-columns:1.1fr 0.8fr 1.6fr;gap:0 40px;font-size:var(--type-small)">
+<div style="padding:0 0 20px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">Assignee</div>
+<div style="padding:0 0 20px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">Status</div>
+<div style="padding:0 0 20px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">What happens</div>
+
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600">Unassigned / Agent Bot</div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(255,171,0,0.16);color:#FFC85C;font-weight:600;font-size:24px">Pending</span></div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#D5DDE9">Bot greets the customer during business hours; outside hours it posts the support window.</div>
+
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600">CS agent name</div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(0,126,255,0.20);color:#7FC4FF;font-weight:600;font-size:24px">Open</span></div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#D5DDE9">Bot is fully off. The agent owns every reply.</div>
+
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600">Agent Bot</div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(0,126,255,0.20);color:#7FC4FF;font-weight:600;font-size:24px">Open</span></div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#D5DDE9">Bot takes over the live case immediately, 24/7.</div>
+
+<div style="padding:28px 0;font-weight:600">Any</div>
+<div style="padding:28px 0"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(1,209,103,0.16);color:#4CE49B;font-weight:600;font-size:24px">Resolved</span></div>
+<div style="padding:28px 0;color:#D5DDE9">Ticket closed and the bot skips the conversation.</div>
+</div>
+</section>
+</sc-if>
+
+<section data-label="Part 1 · WhatsApp" data-screen-label="P1" data-speaker-notes="Part one covers the WhatsApp inbox." style="background:radial-gradient(120% 120% at 50% 0%,#004099 0%,#0A0E1A 62%);display:flex;flex-direction:column;justify-content:center;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:40px;font-weight:700;color:#00F5FF;letter-spacing:0.1em">PART 01</div>
+<h2 style="margin:28px 0 0;font-size:88px;font-weight:800;letter-spacing:-0.02em;line-height:1.1">Handoff on WhatsApp</h2>
+<p style="margin:28px 0 0;font-size:var(--type-subtitle);color:#9FD0FF;max-width:1200px">Four steps: bot greets, CS takes over, bot covers, ticket closes.</p>
+</section>
+
+<section data-label="Step 1" data-screen-label="04" data-speaker-notes="Nothing to do here. This is the default state for every new WhatsApp message." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Step 1: First Contact</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">New customer arrives</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">The bot acts as receptionist</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">When a customer sends the first message on WhatsApp, Chatwoot sets:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> Unassigned / Agent Bot</div>
+<div><strong style="font-weight:600">Status:</strong> <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#FFF3D6;color:#B26E00;font-weight:600">Pending</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">The bot answers from its script during business hours. Outside hours, it tells the customer when the team is back. No CS action needed.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step1.png" alt="Chatwoot: Assignee BSmart WA, Status Pending" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Step 2" data-screen-label="05" data-speaker-notes="Self-assign and set Open. That single action silences the bot completely." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Step 2: CS Takes Over</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Human support</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Turn the bot off to advise</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">When the case needs an agent, set both fields:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> your own name</div>
+<div><strong style="font-weight:600">Status:</strong> <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#E4F1FF;color:#004099;font-weight:600">Open</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">The bot stops replying entirely. Every message from now on is yours.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step2.png" alt="Chatwoot: Assignee set to a CS agent, Status Open" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Step 3" data-screen-label="06" data-speaker-notes="Only change the assignee. Leaving Open is what gives 24/7 cover." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Step 3: Hand Back to the Bot</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Agent busy or off shift</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">The bot covers the live case</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">Mid-conversation, change one field only:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> change to Agent Bot</div>
+<div><strong style="font-weight:600">Status:</strong> keep <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#E4F1FF;color:#004099;font-weight:600">Open</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">With Open kept, the bot replies immediately and around the clock — including outside business hours.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step3.png" alt="Chatwoot: Assignee changed back to Agent Bot, Status kept Open" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Step 4" data-screen-label="07" data-speaker-notes="Resolved is the close. The bot skips resolved conversations." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Step 4: Close the Case</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">End of support</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Close the ticket in Chatwoot</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">Once the customer's request is settled:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Action:</strong> set the status to <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#DFF7EA;color:#017A3D;font-weight:600">Resolved</span></div>
+<div><strong style="font-weight:600">Assignee:</strong> any — it no longer matters</div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">The conversation is complete and the bot skips it. Reopen is still available if the customer comes back in the same thread.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step4a.png" alt="Chatwoot: conversation marked resolved" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="After Resolved" data-screen-label="08" data-speaker-notes="A resolved case never blocks the customer. Their next message starts a fresh Pending conversation with the bot on duty." style="background:#F6F8FB;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">After Resolved: The Loop Restarts</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Customer returns</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">A new conversation opens at Step 1</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">If the customer messages again after the case was resolved, Chatwoot creates a new conversation:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> Agent Bot</div>
+<div><strong style="font-weight:600">Status:</strong> <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#FFF3D6;color:#B26E00;font-weight:600">Pending</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">The original Pending flow resumes, so the bot greets the customer again and the four steps repeat from the beginning.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step4b.png" alt="Chatwoot: a new Pending conversation created after a resolved case" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Part 2 · Livechat" data-screen-label="P2" data-speaker-notes="Part two covers the BSmart Livechat widget on the website. Same two fields, one extra path: the Talk to Agent form." style="background:radial-gradient(120% 120% at 50% 0%,#004099 0%,#0A0E1A 62%);display:flex;flex-direction:column;justify-content:center;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:40px;font-weight:700;color:#00F5FF;letter-spacing:0.1em">PART 02</div>
+<h2 style="margin:28px 0 0;font-size:88px;font-weight:800;letter-spacing:-0.02em;line-height:1.1">Handoff on BSmart Livechat</h2>
+<p style="margin:28px 0 0;font-size:var(--type-subtitle);color:#9FD0FF;max-width:1300px">Website widget. Same two fields, plus the customer-initiated "Talk to Agent" form.</p>
+</section>
+
+<section data-label="Livechat overview" data-screen-label="LC-Overview" data-speaker-notes="The whole Livechat flow on one page: five scenarios, and what to set for each." style="background:#0A0E1A;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em">Livechat Flow at a Glance</h2>
+<div style="margin-top:48px;display:grid;grid-template-columns:0.85fr 1.6fr;gap:0 56px;font-size:var(--type-small)">
+<div style="padding:0 0 18px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">Scenario</div>
+<div style="padding:0 0 18px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">Flow</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600;font-size:var(--type-body);color:#fff">1 · New visitor arrives</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:12px;color:#D5DDE9;line-height:1.45">
+<div>Anonymous visitor sends the first message; bot acts as receptionist.</div>
+<div style="display:flex;gap:36px;flex-wrap:wrap;color:#7FC4FF;font-weight:600"><span>+ Assignee = Agent Bot</span><span>+ Status = Pending</span></div>
+</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600;font-size:var(--type-body);color:#fff">2 · CS takes over</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:12px;color:#D5DDE9;line-height:1.45">
+<div>CS joins the chat and the bot steps aside.</div>
+<div style="display:flex;gap:36px;flex-wrap:wrap;color:#7FC4FF;font-weight:600"><span>+ Assignee = CS name</span><span>+ Status = Open</span></div>
+</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600;font-size:var(--type-body);color:#fff">3 · Bot covers the shift</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:12px;color:#D5DDE9;line-height:1.45">
+<div>CS is busy or off shift; the bot carries the live case 24/7.</div>
+<div style="display:flex;gap:36px;flex-wrap:wrap;color:#7FC4FF;font-weight:600"><span>+ Assignee = Agent Bot</span><span>+ Status stays Open</span></div>
+</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600;font-size:var(--type-body);color:#fff">4 · Customer asks for a human</div>
+<div style="padding:26px 0;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:12px;color:#D5DDE9;line-height:1.45">
+<div>"Talk to Agent" form submitted; contact becomes identified.</div>
+<div style="display:flex;gap:36px;flex-wrap:wrap;color:#7FC4FF;font-weight:600"><span>+ No CS change needed</span><span>+ Bot posts the working-hours note</span></div>
+</div>
+<div style="padding:26px 0;border-bottom:none;font-weight:600;font-size:var(--type-body);color:#fff">5 · Close &amp; re-open</div>
+<div style="padding:26px 0;border-bottom:none;display:flex;flex-direction:column;gap:12px;color:#D5DDE9;line-height:1.45">
+<div>CS closes the case; a new message re-opens it from the start.</div>
+<div style="display:flex;gap:36px;flex-wrap:wrap;color:#7FC4FF;font-weight:600"><span>+ Status = Resolved</span><span>+ Re-opens as Pending with history</span></div>
+</div>
+</div>
+</section>
+
+<section data-label="Step 1 · New visitor" data-screen-label="Step 1 · New visitor" data-speaker-notes="Default state on the website widget. Nothing for CS to do." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:34px;font-weight:700;color:#007EFF;letter-spacing:0.08em">STEP 1</div>
+<h2 style="margin:20px 0 0;font-size:76px;font-weight:800;letter-spacing:-0.02em;color:#0A0E1A;line-height:1.08">New visitor arrives</h2>
+<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:64px;margin-top:48px;flex:1;min-height:0;align-items:center">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8A97A8">Flow</div>
+<div style="display:flex;flex-direction:column;gap:26px;font-size:36px;line-height:1.45;color:#0A0E1A"><div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>An anonymous visitor sends the first message in the website Livechat.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>BSmart greets the visitor and handles the conversation.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>No CS action required at this point.</span></div></div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:52px 44px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:34px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Chatwoot settings</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:var(--type-small);color:#4A5568">Assignee</div>
+<div style="font-size:40px;font-weight:700;color:#004099;line-height:1.2">Agent Bot</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:var(--type-small);color:#4A5568">Status</div>
+<div style="font-size:40px"><span style="display:inline-block;padding:8px 24px;border-radius:999px;background:#FFF3D6;color:#B26E00;font-weight:600">Pending</span></div>
+</div>
+<div style="font-size:var(--type-small);line-height:1.5;color:#004099;background:#EAF4FF;border-radius:16px;padding:26px 28px">The bot follows its script during working hours. Outside hours it tells the visitor when the team is back.</div>
+</div>
+</div>
+</section>
+
+<section data-label="Step 1 · Widget &amp; queue" data-screen-label="Step 1 · Widget &amp; queue" data-speaker-notes="Widget on the left, Chatwoot Pending filter on the right." style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 1 — Anonymous visitor, conversation waiting as Pending</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc1.png" alt="Step 1 — Anonymous visitor, conversation waiting as Pending" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<section data-label="Step 1 · Assignee" data-screen-label="Step 1 · Assignee" data-speaker-notes="Conversation Actions panel shows BSmart as the assigned agent." style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 1 — Anonymous User – Assigned to the Agent Bot (BSmart)</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc1a.png" alt="Step 1 — Assignee is the Agent Bot (BSmart)" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<section data-label="Step 2 · CS takes over" data-screen-label="Step 2 · CS takes over" data-speaker-notes="Human takeover. Bot skips as soon as a person owns the ticket." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:34px;font-weight:700;color:#007EFF;letter-spacing:0.08em">STEP 2</div>
+<h2 style="margin:20px 0 0;font-size:76px;font-weight:800;letter-spacing:-0.02em;color:#0A0E1A;line-height:1.08">CS takes over</h2>
+<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:64px;margin-top:48px;flex:1;min-height:0;align-items:center">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8A97A8">Flow</div>
+<div style="display:flex;flex-direction:column;gap:26px;font-size:36px;line-height:1.45;color:#0A0E1A"><div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>CS picks up the case and turns the bot off to chat with the customer directly.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>Assign the conversation to yourself, then set the status to Open.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>The bot skips the conversation automatically.</span></div></div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:52px 44px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:34px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Chatwoot settings</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:var(--type-small);color:#4A5568">Assignee</div>
+<div style="font-size:40px;font-weight:700;color:#004099;line-height:1.2">Your CS name</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:var(--type-small);color:#4A5568">Status</div>
+<div style="font-size:40px"><span style="display:inline-block;padding:8px 24px;border-radius:999px;background:#E4F1FF;color:#004099;font-weight:600">Open</span></div>
+</div>
+<div style="font-size:var(--type-small);line-height:1.5;color:#004099;background:#EAF4FF;border-radius:16px;padding:26px 28px">From here every reply is yours. The widget shows the customer they are connected to a person.</div>
+</div>
+</div>
+</section>
+
+<section data-label="Step 2 · Screenshot" data-screen-label="Step 2 · Screenshot" data-speaker-notes="Widget shows " you="" are="" now="" connected="" with…"="" once="" the="" agent="" self-assigns."="" style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 2 — Assigned to CS, status Open, bot off</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc2.png" alt="Step 2 — Assigned to CS, status Open, bot off" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<section data-label="Step 3 · Bot covers" data-screen-label="Step 3 · Bot covers" data-speaker-notes="Only the assignee changes. Open is what buys 24/7 cover." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:34px;font-weight:700;color:#007EFF;letter-spacing:0.08em">STEP 3</div>
+<h2 style="margin:20px 0 0;font-size:76px;font-weight:800;letter-spacing:-0.02em;color:#0A0E1A;line-height:1.08">Bot covers the shift</h2>
+<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:64px;margin-top:48px;flex:1;min-height:0;align-items:center">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8A97A8">Flow</div>
+<div style="display:flex;flex-direction:column;gap:26px;font-size:36px;line-height:1.45;color:#0A0E1A"><div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>CS is mid-conversation but gets busy or reaches the end of the shift.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>Change the assignee back to Agent Bot and leave the status as it is.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>The bot picks the case up immediately, inside or outside working hours.</span></div></div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:52px 44px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:34px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Chatwoot settings</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:var(--type-small);color:#4A5568">Assignee</div>
+<div style="font-size:40px;font-weight:700;color:#004099;line-height:1.2">Agent Bot</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:var(--type-small);color:#4A5568">Status</div>
+<div style="font-size:40px"><span style="display:inline-block;padding:8px 24px;border-radius:999px;background:#E4F1FF;color:#004099;font-weight:600">Open</span> <span style="font-size:var(--type-small);color:#4A5568">(keep as-is)</span></div>
+</div>
+<div style="font-size:var(--type-small);line-height:1.5;color:#004099;background:#EAF4FF;border-radius:16px;padding:26px 28px">Keeping Open is what gives 24/7 cover. Switching to Pending would put the bot back on working hours.</div>
+</div>
+</div>
+</section>
+
+<section data-label="Step 3 · Screenshot" data-screen-label="Step 3 · Screenshot" data-speaker-notes="Assignee back to BSmart while the ticket stays Open." style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 3 — Handed back to the Agent Bot, status kept Open</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc3.png" alt="Step 3 — Handed back to the Agent Bot, status kept Open" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<section data-label="Step 4 · Talk to Agent" data-screen-label="Step 4 · Talk to Agent" data-speaker-notes="Customer-initiated path. The form turns an anonymous visitor into a named contact." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:34px;font-weight:700;color:#007EFF;letter-spacing:0.08em">STEP 4</div>
+<h2 style="margin:20px 0 0;font-size:76px;font-weight:800;letter-spacing:-0.02em;color:#0A0E1A;line-height:1.08">Customer asks for a human</h2>
+<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:64px;margin-top:48px;flex:1;min-height:0;align-items:center">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8A97A8">Flow</div>
+<div style="display:flex;flex-direction:column;gap:26px;font-size:36px;line-height:1.45;color:#0A0E1A"><div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>The customer clicks <strong style="font-weight:600">Talk to Agent</strong> and submits the contact form.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>The contact changes from anonymous to identified in Chatwoot.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>The bot posts the working-hours note and flags the request for CS.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>If the customer picks <strong style="font-weight:600">Continue with BSmart</strong>, the bot keeps the conversation.</span></div></div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:52px 44px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:34px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Chatwoot settings</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:var(--type-small);color:#4A5568">Assignee</div>
+<div style="font-size:40px;font-weight:700;color:#004099;line-height:1.2">Unchanged until CS picks it up</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:var(--type-small);color:#4A5568">Status</div>
+<div style="font-size:40px"><span style="display:inline-block;padding:8px 24px;border-radius:999px;background:#FFF3D6;color:#B26E00;font-weight:600">Pending</span> / <span style="display:inline-block;padding:8px 24px;border-radius:999px;background:#E4F1FF;color:#004099;font-weight:600">Open</span></div>
+</div>
+<div style="font-size:var(--type-small);line-height:1.5;color:#004099;background:#EAF4FF;border-radius:16px;padding:26px 28px">Watch for these requests in the inbox: they are customers who explicitly asked for a person.</div>
+</div>
+</div>
+</section>
+
+<section data-label="Step 4 · Form" data-screen-label="Step 4 · Form" data-speaker-notes="Talk to Agent opens the contact form inside the widget." style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 4 — Talk to Agent form submitted</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc6.png" alt="Step 4 — Talk to Agent form submitted" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<section data-label="Step 4 · Identified contact" data-screen-label="Step 4 · Identified contact" data-speaker-notes="Button disabled after submit; contact panel now shows a name and email." style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 4 — After submit: anonymous becomes identified</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc6a.png" alt="Step 4 — After submit: anonymous becomes identified" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<section data-label="Step 4 · Continue with BSmart" data-screen-label="Step4-Bot" data-speaker-notes="The customer can also decline the handoff and stay with the bot." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:34px;font-weight:700;color:#007EFF;letter-spacing:0.08em">STEP 4 · ALTERNATIVE</div>
+<h2 style="margin:20px 0 0;font-size:76px;font-weight:800;letter-spacing:-0.02em;color:#0A0E1A;line-height:1.08">Customer stays with the bot</h2>
+<div style="display:flex;flex-direction:column;gap:44px;margin-top:52px;flex:1;min-height:0;justify-content:center">
+<div style="display:flex;flex-direction:column;gap:24px;font-size:36px;line-height:1.45;color:#0A0E1A;max-width:1500px">
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>After the handoff prompt, the customer can pick <strong style="font-weight:600">Continue with BSmart</strong> instead of waiting for a person.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>The widget confirms "You're now connected with BSmart" and the bot keeps the conversation.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>No CS action needed — pick the case up later only if the customer asks again.</span></div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:36px 40px;box-shadow:0 8px 28px rgba(0,64,153,0.06);align-self:center;display:flex;flex-direction:column;gap:20px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8A97A8">What the customer sees</div>
+<img src="assets/tc7.png" alt="Continue with BSmart choice in the widget" style="width:1245px;max-width:100%;height:auto">
+</div>
+</div>
+</section>
+
+<section data-label="Step 5 · Close &amp; re-open" data-screen-label="Step 5 · Close &amp; re-open" data-speaker-notes="Resolved closes the ticket; the next message re-opens it as Pending with history attached." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:34px;font-weight:700;color:#007EFF;letter-spacing:0.08em">STEP 5</div>
+<h2 style="margin:20px 0 0;font-size:76px;font-weight:800;letter-spacing:-0.02em;color:#0A0E1A;line-height:1.08">Close &amp; re-open</h2>
+<div style="display:grid;grid-template-columns:1.25fr 1fr;gap:64px;margin-top:48px;flex:1;min-height:0;align-items:center">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#8A97A8">Flow</div>
+<div style="display:flex;flex-direction:column;gap:26px;font-size:36px;line-height:1.45;color:#0A0E1A"><div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>CS closes the conversation once the case is handled.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>A later message from the customer re-opens the ticket automatically.</span></div>
+<div style="display:flex;gap:20px"><span style="color:#007EFF;font-weight:700">·</span><span>It comes back as Pending and routes from the start, with earlier context attached.</span></div></div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:52px 44px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:34px">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Chatwoot settings</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:var(--type-small);color:#4A5568">Assignee</div>
+<div style="font-size:40px;font-weight:700;color:#004099;line-height:1.2">Any</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:var(--type-small);color:#4A5568">Status</div>
+<div style="font-size:40px"><span style="display:inline-block;padding:8px 24px;border-radius:999px;background:#DFF7EA;color:#017A3D;font-weight:600">Resolved</span></div>
+</div>
+<div style="font-size:var(--type-small);line-height:1.5;color:#004099;background:#EAF4FF;border-radius:16px;padding:26px 28px">Resolved keeps the queue clean and the bot skips the conversation. Nothing is lost when the customer returns.</div>
+</div>
+</div>
+</section>
+
+<section data-label="Step 5 · Resolved" data-screen-label="Step 5 · Resolved" data-speaker-notes="Resolve from the header; the widget shows " conversation="" resolved"."="" style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 5 — Status set to Resolved, bot skips the case</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc4.png" alt="Step 5 — Status set to Resolved, bot skips the case" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<section data-label="Step 5 · Re-open" data-screen-label="Step 5 · Re-open" data-speaker-notes="Re-open after resolve, with the previous context attached." style="background:#F6F8FB;display:flex;flex-direction:column;padding:56px 56px 44px">
+<h3 style="margin:0 0 24px;font-size:40px;font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Step 5 — Re-opened as Pending with context history</h3>
+<div style="flex:1;min-height:0;display:flex;align-items:center;justify-content:center">
+<img src="assets/tc5.png" alt="Step 5 — Re-opened as Pending with context history" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain">
+</div>
+</section>
+
+<sc-if value="{{ showRecap }}" hint-placeholder-val="{{ true }}">
+<section data-label="Recap" data-screen-label="09" data-speaker-notes="Three habits: assign yourself before replying, hand back to Agent Bot instead of leaving cases idle, resolve when done." style="background:radial-gradient(120% 120% at 50% 0%,#004099 0%,#0A0E1A 62%);display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em">Recap for the CS Desk</h2>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:var(--gap-title)">
+<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:38px 36px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:44px;font-weight:700;color:#00F5FF">01</div>
+<h3 style="margin:0;font-size:34px;font-weight:700">Assign before you reply</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#C9D5E5">Put your name on the conversation and set it to Open, or the bot keeps answering alongside you.</p>
+</div>
+<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:38px 36px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:44px;font-weight:700;color:#00F5FF">02</div>
+<h3 style="margin:0;font-size:34px;font-weight:700">Hand back, don't park</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#C9D5E5">Leaving your shift with a case Open and assigned to you leaves the customer waiting. Reassign to Agent Bot.</p>
+</div>
+<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:38px 36px;display:flex;flex-direction:column;gap:16px">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:44px;font-weight:700;color:#00F5FF">03</div>
+<h3 style="margin:0;font-size:34px;font-weight:700">Resolve when finished</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#C9D5E5">Resolved keeps the queue clean, and the next inbound message reopens the flow at Pending automatically.</p>
+</div>
+</div>
+<div style="margin-top:44px;background:rgba(255,171,0,0.10);border:1px solid rgba(255,171,0,0.38);border-radius:24px;padding:40px 44px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:baseline;gap:18px;flex-wrap:wrap">
+<div style="font-size: 34px; font-weight: 700; color: var(--bbc-white); letter-spacing: -0.01em">⚠️ Important note</div>
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:var(--type-eyebrow);font-weight:700;color:#00F5FF">Chatwoot v4.16.2</div>
+</div>
+<div style="font-size: 26px; line-height: 1.5; color: #EAF1FA; max-width: 1620px">Unlike previous versions, the current Chatwoot (<b data-path-to-node="5,0" data-index-in-node="73">v4.16.2</b>) requires <b data-path-to-node="5,0" data-index-in-node="91" style="color: var(--bbc-amber);">BOTH</b> actions to stop the Bot: you&nbsp;<b>MUST</b> Assign Agent <b>AND</b> change Status from <b>Pending</b> to <b>Open</b> at the same time. Doing only one will NOT turn off the Bot.</div>
+
+</div>
+
+</section>
+</sc-if>
+
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showQuickReference&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Slides&quot;},&quot;showRecap&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Slides&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showQuickReference: this.props.showQuickReference ?? true,
+      showRecap: this.props.showRecap ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

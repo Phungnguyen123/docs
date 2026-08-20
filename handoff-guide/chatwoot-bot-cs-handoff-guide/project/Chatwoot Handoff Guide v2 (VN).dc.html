@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/colors.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/typography.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/effects.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/tokens/tech.css">
+<link rel="stylesheet" href="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/styles.css">
+<script src="_ds/design-system-2-0-9250fceb-2e94-4fc1-86df-84dbdaca1635/_ds_bundle.js"></script>
+<style>
+:root{--type-title:64px;--type-subtitle:42px;--type-body:30px;--type-small:26px;--type-eyebrow:24px;--pad-x:96px;--pad-top:88px;--pad-bottom:80px;--gap-title:56px;--gap-item:24px}
+body{margin:0;font-family:'Poppins',system-ui,sans-serif}
+a{color:#007EFF;text-decoration:none}
+a:hover{color:#004099}
+</style>
+</helmet>
+<x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%">
+
+<section data-label="Trang bìa" data-screen-label="01" data-speaker-notes="Phương án D: Assignee chọn ai trả lời, Status chọn khi nào bot được trả lời. Bốn bước, làm hoàn toàn trong Chatwoot." style="background:radial-gradient(120% 120% at 50% 0%,#004099 0%,#0A0E1A 62%);display:flex;flex-direction:column;justify-content:center;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<img src="assets/logo-light.png" alt="BBCIncorp" style="width:280px;height:auto;margin-bottom:64px">
+<div style="display:inline-flex;align-self:flex-start;padding:10px 24px;border-radius:999px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.16);font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#7FC4FF;margin-bottom:36px">Hướng dẫn sử dụng · Phương án D</div>
+<h1 style="margin:0;font-size:96px;line-height:1.05;letter-spacing:-0.02em;font-weight:800;max-width:1400px">Quy trình Handoff Bot &amp; CS trên Chatwoot</h1>
+<p style="margin:32px 0 0;font-size:var(--type-subtitle);line-height:1.35;font-weight:500;color:#9FD0FF;max-width:1200px">Cách CS Team chuyển hội thoại WhatsApp cho BSmart và nhận lại</p>
+</section>
+
+<section data-label="Nguyên tắc cốt lõi" data-screen-label="02" data-speaker-notes="Chỉ có hai trường. Assignee = ai trả lời. Status = khi nào bot được trả lời." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Nguyên tắc cốt lõi</h2>
+<p style="margin:20px 0 0;font-size:var(--type-body);color:#4A5568;max-width:1100px">Chỉ hai trường quyết định việc handoff. Mọi thứ khác đều suy ra từ đó.</p>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:36px;margin-top:var(--gap-title)">
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:44px 40px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:20px">
+<div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#00A7FD,#00F5FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700">1</div>
+<h3 style="margin:0;font-size:38px;font-weight:700;color:#004099;letter-spacing:-0.01em">Assignee = AI xử lý</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#4A5568">Quyết định người thật hay bot phụ trách hội thoại.</p>
+<div style="display:flex;flex-direction:column;gap:14px;font-size:var(--type-small);line-height:1.45;color:#0A0E1A">
+<div><strong style="font-weight:600">Gán cho CS</strong> — bot tắt.</div>
+<div><strong style="font-weight:600">Gán cho Agent Bot</strong> — bot bật.</div>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:44px 40px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:20px">
+<div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#00A7FD,#00F5FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700">2</div>
+<h3 style="margin:0;font-size:38px;font-weight:700;color:#004099;letter-spacing:-0.01em">Status Pending</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#4A5568">Dành cho hội thoại mới vào.</p>
+<div style="display:flex;flex-direction:column;gap:14px;font-size:var(--type-small);line-height:1.45;color:#0A0E1A">
+<div>Bot trả lời <strong style="font-weight:600">theo giờ làm việc</strong>.</div>
+<div>Ngoài giờ, bot thông báo khung giờ hỗ trợ hoặc gửi form.</div>
+</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:44px 40px;box-shadow:0 8px 28px rgba(0,64,153,0.06);display:flex;flex-direction:column;gap:20px">
+<div style="width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#00A7FD,#00F5FF);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700">3</div>
+<h3 style="margin:0;font-size:38px;font-weight:700;color:#004099;letter-spacing:-0.01em">Status Open</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#4A5568">Dành cho ca đang chạy cần người gánh.</p>
+<div style="display:flex;flex-direction:column;gap:14px;font-size:var(--type-small);line-height:1.45;color:#0A0E1A">
+<div>Khi gán lại cho Agent Bot, bot trả lời <strong style="font-weight:600">ngay lập tức, 24/7</strong>.</div>
+<div>Không còn phụ thuộc giờ làm việc.</div>
+</div>
+</div>
+</div>
+</section>
+
+<sc-if value="{{ showQuickReference }}" hint-placeholder-val="{{ true }}">
+<section data-label="Bảng tra nhanh" data-screen-label="03" data-speaker-notes="Bảng này nên mở cạnh Chatwoot. Đọc từ trái sang phải: bạn set gì, bot làm gì." style="background:#0A0E1A;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em">Bảng tra nhanh</h2>
+<p style="margin:20px 0 0;font-size:var(--type-body);color:#9AA7BD">Bốn tổ hợp bao trọn mọi hội thoại.</p>
+<div style="margin-top:var(--gap-title);display:grid;grid-template-columns:1.1fr 0.8fr 1.6fr;gap:0 40px;font-size:var(--type-small)">
+<div style="padding:0 0 20px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">Assignee</div>
+<div style="padding:0 0 20px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">Status</div>
+<div style="padding:0 0 20px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#7FC4FF;font-size:var(--type-eyebrow);border-bottom:1px solid rgba(255,255,255,0.16)">Kết quả</div>
+
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600">Unassigned / Agent Bot</div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(255,171,0,0.16);color:#FFC85C;font-weight:600;font-size:var(--type-eyebrow)">Pending</span></div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#D5DDE9">Bot đón khách trong giờ làm việc; ngoài giờ bot thông báo khung giờ hỗ trợ.</div>
+
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600">Tên CS</div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(0,126,255,0.20);color:#7FC4FF;font-weight:600;font-size:var(--type-eyebrow)">Open</span></div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#D5DDE9">Bot tắt hoàn toàn. CS chịu trách nhiệm mọi câu trả lời.</div>
+
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:600">Agent Bot</div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08)"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(0,126,255,0.20);color:#7FC4FF;font-weight:600;font-size:var(--type-eyebrow)">Open</span></div>
+<div style="padding:28px 0;border-bottom:1px solid rgba(255,255,255,0.08);color:#D5DDE9">Bot tiếp quản ca đang chạy ngay lập tức, 24/7.</div>
+
+<div style="padding:28px 0;font-weight:600">Bất kỳ</div>
+<div style="padding:28px 0"><span style="display:inline-block;padding:6px 18px;border-radius:999px;background:rgba(1,209,103,0.16);color:#4CE49B;font-weight:600;font-size:var(--type-eyebrow)">Resolved</span></div>
+<div style="padding:28px 0;color:#D5DDE9">Ticket được đóng và bot bỏ qua hội thoại.</div>
+</div>
+</section>
+</sc-if>
+
+<section data-label="Bước 1" data-screen-label="04" data-speaker-notes="Không cần làm gì. Đây là trạng thái mặc định cho mọi tin nhắn WhatsApp mới." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Bước 1: Khách mới nhắn vào</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Khách hàng mới</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Bot đóng vai trò lễ tân</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">Khi khách gửi tin nhắn đầu tiên qua WhatsApp, Chatwoot đặt:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> Unassigned / Agent Bot</div>
+<div><strong style="font-weight:600">Status:</strong> <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#FFF3D6;color:#B26E00;font-weight:600">Pending</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">Bot trả lời theo kịch bản trong giờ làm việc. Ngoài giờ, bot cho khách biết khi nào team quay lại. CS không cần thao tác.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step1.png" alt="Chatwoot: Assignee BSmart WA, Status Pending" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Bước 2" data-screen-label="05" data-speaker-notes="Nhận hội thoại về mình và set Open. Chỉ một thao tác đó là bot im hoàn toàn." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Bước 2: CS vào hỗ trợ</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Người thật tư vấn</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Tắt bot để CS tư vấn</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">Khi ca cần CS xử lý, set cả hai trường:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> tên CS của bạn</div>
+<div><strong style="font-weight:600">Status:</strong> <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#E4F1FF;color:#004099;font-weight:600">Open</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">Bot ngừng trả lời hoàn toàn. Từ đây mọi tin nhắn đều do bạn phụ trách.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step2.png" alt="Chatwoot: Assignee là CS, Status Open" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Bước 3" data-screen-label="06" data-speaker-notes="Chỉ đổi Assignee. Giữ Open mới có vùng phủ 24/7." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Bước 3: Chuyển lại cho bot</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">CS bận hoặc hết ca</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Bot gánh ca đang chạy</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">Giữa hội thoại, chỉ đổi duy nhất một trường:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> đổi sang Agent Bot</div>
+<div><strong style="font-weight:600">Status:</strong> giữ <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#E4F1FF;color:#004099;font-weight:600">Open</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">Vì vẫn giữ Open, bot trả lời ngay và liên tục 24/7 — kể cả ngoài giờ làm việc.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step3.png" alt="Chatwoot: Assignee đổi về Agent Bot, giữ Status Open" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Bước 4" data-screen-label="07" data-speaker-notes="Resolved là đóng ca. Bot bỏ qua hội thoại đã resolved." style="background:#FBFCFE;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Bước 4: Xử lý xong, đóng ca</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Kết thúc hỗ trợ</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Đóng ticket trên Chatwoot</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">Khi yêu cầu của khách đã được giải quyết:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Thao tác:</strong> chuyển Status sang <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#DFF7EA;color:#017A3D;font-weight:600">Resolved</span></div>
+<div><strong style="font-weight:600">Assignee:</strong> bất kỳ — không còn ảnh hưởng</div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">Cuộc hội thoại hoàn tất và bot bỏ qua ca này. Vẫn có thể mở lại nếu khách quay lại trong cùng luồng.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step4a.png" alt="Chatwoot: hội thoại chuyển sang Resolved" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<section data-label="Sau Resolved" data-screen-label="08" data-speaker-notes="Ca đã resolved không chặn khách. Tin nhắn tiếp theo tạo hội thoại Pending mới và bot lại đón khách." style="background:#F6F8FB;display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em;color:#0A0E1A">Sau Resolved: luồng quay lại từ đầu</h2>
+<div style="display:grid;grid-template-columns:1fr 1.15fr;gap:72px;align-items:center;margin-top:44px;flex:1;min-height:0">
+<div style="display:flex;flex-direction:column;gap:var(--gap-item)">
+<div style="font-size:var(--type-eyebrow);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#007EFF">Khách nhắn lại</div>
+<h3 style="margin:0;font-size:var(--type-subtitle);font-weight:700;color:#0A0E1A;letter-spacing:-0.01em">Hội thoại mới bắt đầu ở Bước 1</h3>
+<p style="margin:0;font-size:var(--type-body);line-height:1.5;color:#4A5568">Nếu khách nhắn tin lại sau khi ca đã Resolved, Chatwoot tạo một hội thoại mới:</p>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:var(--type-body);color:#0A0E1A">
+<div><strong style="font-weight:600">Assignee:</strong> Agent Bot</div>
+<div><strong style="font-weight:600">Status:</strong> <span style="display:inline-block;padding:4px 18px;border-radius:999px;background:#FFF3D6;color:#B26E00;font-weight:600">Pending</span></div>
+</div>
+<div style="background:#EAF4FF;border-left:5px solid #007EFF;border-radius:0 16px 16px 0;padding:26px 30px;font-size:var(--type-small);line-height:1.5;color:#004099">Hệ thống mở lại luồng Pending ban đầu, bot đón khách trở lại và bốn bước lặp lại từ đầu.</div>
+</div>
+<div style="background:#fff;border:1px solid #DCE3ED;border-radius:24px;padding:20px;box-shadow:0 10px 34px rgba(0,64,153,0.08);height:100%;display:flex;align-items:center;justify-content:center;min-height:0">
+<img src="assets/step4b.png" alt="Chatwoot: hội thoại Pending mới được tạo sau ca Resolved" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px">
+</div>
+</div>
+</section>
+
+<sc-if value="{{ showRecap }}" hint-placeholder-val="{{ true }}">
+<section data-label="Ghi nhớ" data-screen-label="09" data-speaker-notes="Ba thói quen: nhận hội thoại trước khi trả lời, chuyển lại cho Agent Bot thay vì để ca treo, resolve khi xong." style="background:radial-gradient(120% 120% at 50% 0%,#004099 0%,#0A0E1A 62%);display:flex;flex-direction:column;padding:var(--pad-top) var(--pad-x) var(--pad-bottom);color:#fff">
+<h2 style="margin:0;font-size:var(--type-title);font-weight:800;letter-spacing:-0.02em">Ghi nhớ cho CS Team</h2>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:var(--gap-title)">
+<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:44px 40px;display:flex;flex-direction:column;gap:18px">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:44px;font-weight:700;color:#00F5FF">01</div>
+<h3 style="margin:0;font-size:34px;font-weight:700">Nhận ca trước khi trả lời</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#C9D5E5">Gán tên bạn vào hội thoại và set Open, nếu không bot vẫn trả lời song song với bạn.</p>
+</div>
+<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:44px 40px;display:flex;flex-direction:column;gap:18px">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:44px;font-weight:700;color:#00F5FF">02</div>
+<h3 style="margin:0;font-size:34px;font-weight:700">Chuyển lại, đừng để treo</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#C9D5E5">Hết ca mà vẫn để ca Open gán cho mình là để khách chờ. Hãy gán lại cho Agent Bot.</p>
+</div>
+<div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:24px;padding:44px 40px;display:flex;flex-direction:column;gap:18px">
+<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:44px;font-weight:700;color:#00F5FF">03</div>
+<h3 style="margin:0;font-size:34px;font-weight:700">Resolve khi đã xong</h3>
+<p style="margin:0;font-size:var(--type-small);line-height:1.55;color:#C9D5E5">Resolved giữ hàng đợi sạch, và tin nhắn kế tiếp của khách tự mở lại luồng ở Pending.</p>
+</div>
+</div>
+<img src="assets/logo-light.png" alt="BBCIncorp" style="width:210px;height:auto;margin-top:auto;align-self:flex-start;opacity:0.9">
+</section>
+</sc-if>
+
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showQuickReference&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Slides&quot;},&quot;showRecap&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Slides&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showQuickReference: this.props.showQuickReference ?? true,
+      showRecap: this.props.showRecap ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>

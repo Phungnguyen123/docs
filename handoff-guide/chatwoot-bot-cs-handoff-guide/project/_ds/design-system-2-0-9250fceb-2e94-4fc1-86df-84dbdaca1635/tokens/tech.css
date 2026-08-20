@@ -1,0 +1,43 @@
+/* ===========================================================================
+   BBCIncorp — Brand v2 (TECH-DRIVEN) tokens
+   Layered on top of the core system. Same brand palette; adds the
+   platform/automation visual language seen in the tech demo:
+   glass surfaces, cyan tech accent, mono data type, grid/node motifs.
+   =========================================================================== */
+:root {
+  /* Mono — used ONLY for numeric data, stat counters, code-like labels */
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace; /* @kind font */
+
+  /* Tech accent — brighter cyan for AI / automation highlights & glows.
+     Matches the real logo mark gradient (#00A7FD → #00F5FF). */
+  --bbc-cyan:      #00C6FB;
+  --bbc-cyan-bright:#00F5FF;
+  --bbc-cyan-soft: rgba(0,198,251,0.14);
+  --bbc-logo-blue: #00A7FD;
+
+  /* Glass surfaces (over the cosmic dark background) */
+  --glass-fill:    rgba(255,255,255,0.05);
+  --glass-fill-2:  rgba(255,255,255,0.08);
+  --glass-border:  rgba(255,255,255,0.12);
+  --glass-blur:    16px;
+
+  /* Blueprint grid + node network (the "connect your tools" automation layer) */
+  --grid-line:     rgba(0,126,255,0.10); /* @kind color */
+  --grid-cell:     56px;
+
+  /* AI / automation gradient + glow (real logo gradient) */
+  --bbc-grad-ai:   linear-gradient(120deg, #00A7FD 0%, #00F5FF 100%); /* @kind color */
+  --grad-logo:     conic-gradient(from 210deg, #0057BD, #00A7FD, #00F5FF, #00A7FD, #0057BD); /* @kind color */
+  --glow-ai:       0 0 48px rgba(0,198,251,0.35);
+
+  /* Semantic aliases for the tech surfaces */
+  --surface-glass:      var(--glass-fill);
+  --surface-glass-hover:var(--glass-fill-2);
+  --border-glass:       var(--glass-border);
+  --text-data:          var(--bbc-cyan);
+
+  /* Tech-v2 display type = MONOSPACE headlines (confirmed from real demo).
+     JetBrains Mono is a close match; confirm the exact face with the user. */
+  --font-display-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace; /* @kind font */
+  --surface-page-warm: var(--bbc-cream);
+}

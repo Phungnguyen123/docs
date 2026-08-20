@@ -1,0 +1,5 @@
+/* BBCIncorp uses Poppins across all text. Loaded from Google Fonts.
+   v2 (tech-driven) adds JetBrains Mono for data / counters / code-like accents.
+   NOTE: mono family is an inference from the tech-platform demo — confirm the
+   exact Framer typeface with the user. */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');

@@ -1,0 +1,73 @@
+/* ===========================================================================
+   BBCIncorp — Color tokens
+   Base palette (raw brand values) + semantic aliases.
+   =========================================================================== */
+:root {
+  /* ---- Base brand palette ---- */
+  --bbc-blue:        #007EFF; /* Primary — CTAs, links, highlights */
+  --bbc-blue-600:    #006AE0;
+  --bbc-blue-700:    #0057BD;
+  --bbc-navy:        #004099; /* Dark navy — headings, dark buttons */
+  --bbc-navy-700:    #00337A;
+  --bbc-navy-900:    #001F4D;
+  --bbc-wordmark:    #333333; /* real logo wordmark ink */
+
+  --bbc-amber:       #F59E0B; /* Orange/Amber — special promo, accents */
+  --bbc-gold:        #FFAB00; /* Gold — secondary CTA buttons */
+  --bbc-gold-600:    #E69900;
+  --bbc-green:       #01D167; /* Green — promo tags, success */
+  --bbc-green-600:   #01B658;
+
+  --bbc-white:       #FFFFFF;
+  --bbc-cream:       #FBF8F3; /* warm off-white — real page background (v2) */
+  --bbc-ink:         #0A0E1A; /* Dark hero / space sections */
+  --bbc-ink-800:     #111729;
+  --bbc-ink-700:     #1B2236;
+
+  /* ---- Neutral ramp (cool gray, tuned to the blue brand) ---- */
+  --bbc-gray-50:     #F6F8FB;
+  --bbc-gray-100:    #EDF1F7;
+  --bbc-gray-200:    #DCE3ED;
+  --bbc-gray-300:    #C2CCDA;
+  --bbc-gray-400:    #94A1B5;
+  --bbc-gray-500:    #6B7888;
+  --bbc-gray-600:    #4A5667;
+  --bbc-gray-700:    #333E4E;
+  --bbc-gray-800:    #232C3A;
+
+  /* ---- Accent gradients (blue → cyan, used on icons + highlights) ---- */
+  --bbc-grad-blue:   linear-gradient(135deg, #007EFF 0%, #00C6FB 100%); /* @kind color */
+  --bbc-grad-navy:   linear-gradient(135deg, #004099 0%, #007EFF 100%); /* @kind color */
+  --bbc-grad-gold:   linear-gradient(135deg, #FFAB00 0%, #F59E0B 100%); /* @kind color */
+  --bbc-grad-hero:   radial-gradient(120% 120% at 50% 0%, #14224A 0%, #0A0E1A 60%); /* @kind color */
+
+  /* =========================================================================
+     Semantic aliases — reference these in components.
+     ========================================================================= */
+  --color-primary:        var(--bbc-blue);
+  --color-primary-hover:  var(--bbc-blue-600);
+  --color-primary-active: var(--bbc-blue-700);
+  --color-secondary:      var(--bbc-gold);
+  --color-secondary-hover:var(--bbc-gold-600);
+  --color-accent:         var(--bbc-amber);
+  --color-success:        var(--bbc-green);
+
+  --text-heading:    var(--bbc-navy);   /* navy headings on light */
+  --text-body:       var(--bbc-gray-700);
+  --text-muted:      var(--bbc-gray-500);
+  --text-on-dark:    var(--bbc-white);
+  --text-on-dark-muted: rgba(255,255,255,0.72);
+  --text-link:       var(--bbc-blue);
+
+  --surface-page:    var(--bbc-white);
+  --surface-soft:    var(--bbc-gray-50);
+  --surface-card:    var(--bbc-white);
+  --surface-dark:    var(--bbc-ink);
+  --surface-dark-alt:var(--bbc-ink-800);
+
+  --border-subtle:   var(--bbc-gray-200);
+  --border-strong:   var(--bbc-gray-300);
+  --border-on-dark:  rgba(255,255,255,0.12);
+
+  --focus-ring:      rgba(0,126,255,0.40);
+}
